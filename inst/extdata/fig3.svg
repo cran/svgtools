@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Ebene_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="841.89px" height="595.28px" viewBox="0 0 841.89 595.28" enable-background="new 0 0 841.89 595.28" xml:space="preserve">
+<rect id="frame" x="141.732" y="85.04" fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" width="226.771" height="226.772"/>
+<text transform="matrix(1 0 0 1 154.2412 326.0625)" font-family="'ArialMT'" font-size="10">Overall</text>
+<text transform="matrix(1 0 0 1 208.7051 326.0625)" font-family="'ArialMT'" font-size="10">Group 1</text>
+<text transform="matrix(1 0 0 1 265.3979 326.0625)" font-family="'ArialMT'" font-size="10">Group 2</text>
+<text transform="matrix(1 0 0 1 322.0908 326.0625)" font-family="'ArialMT'" font-size="10">Group 3</text>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="170.079" y1="311.812" x2="170.079" y2="316.063"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="226.771" y1="311.812" x2="226.771" y2="316.063"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="283.464" y1="311.812" x2="283.464" y2="316.063"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="340.157" y1="311.812" x2="340.157" y2="316.063"/>
+<rect x="374.173" y="85.117" fill="#3C3C3B" width="17.008" height="8.504"/>
+<text transform="matrix(1 0 0 1 394.0156 93.6211)" font-family="'ArialMT'" font-size="10">Category A</text>
+<rect x="374.173" y="102.124" fill="#878787" width="17.008" height="8.504"/>
+<text transform="matrix(1 0 0 1 394.0156 110.6284)" font-family="'ArialMT'" font-size="10">Category B</text>
+<rect x="374.173" y="119.129" fill="#C6C6C6" width="17.008" height="8.504"/>
+<text transform="matrix(1 0 0 1 394.0156 127.6348)" font-family="'ArialMT'" font-size="10">Category C</text>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="85.04" x2="137.48" y2="85.04"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="113.386" x2="137.48" y2="113.386"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="141.732" x2="137.48" y2="141.732"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="170.078" x2="137.48" y2="170.078"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="198.424" x2="137.48" y2="198.424"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="226.771" x2="137.48" y2="226.771"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="255.117" x2="137.48" y2="255.117"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="283.463" x2="137.48" y2="283.463"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="311.81" x2="137.48" y2="311.81"/>
+<text transform="matrix(1 0 0 1 221.7754 78.3081)" font-family="'ArialMT'" font-size="12">My bar chart</text>
+<text transform="matrix(1 0 0 1 127.667 314.4785)" font-family="'ArialMT'" font-size="10">0</text>
+<text transform="matrix(1 0 0 1 122.1055 286.1318)" font-family="'ArialMT'" font-size="10">20</text>
+<text transform="matrix(1 0 0 1 122.1055 257.7852)" font-family="'ArialMT'" font-size="10">40</text>
+<text transform="matrix(1 0 0 1 122.1055 229.4385)" font-family="'ArialMT'" font-size="10">60</text>
+<text transform="matrix(1 0 0 1 122.1055 201.0918)" font-family="'ArialMT'" font-size="10">80</text>
+<text transform="matrix(1 0 0 1 116.5439 172.7451)" font-family="'ArialMT'" font-size="10">100</text>
+<text transform="matrix(1 0 0 1 116.5439 144.3984)" font-family="'ArialMT'" font-size="10">120</text>
+<text transform="matrix(1 0 0 1 116.5439 116.0518)" font-family="'ArialMT'" font-size="10">140</text>
+<text transform="matrix(1 0 0 1 116.5439 87.7051)" font-family="'ArialMT'" font-size="10">160</text>
+<text transform="matrix(0 -1 1 0 110.4619 229.5532)" font-family="'ArialMT'" font-size="10">Some amount</text>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="198.425" y1="311.812" x2="198.425" y2="85.04"/>
+<g id="overall">
+	<rect x="156.746" y="255.119" fill="#3C3C3B" width="26.667" height="56.693"/>
+	<rect x="156.746" y="198.425" fill="#878787" width="26.667" height="56.693"/>
+	<rect x="156.746" y="141.732" fill="#C6C6C6" width="26.667" height="56.693"/>
+	<text transform="matrix(1 0 0 1 164.5171 306.2188)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">20</text>
+	<text transform="matrix(1 0 0 1 164.5171 249.5259)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">20</text>
+	<text transform="matrix(1 0 0 1 164.5171 192.833)" font-family="'ArialMT'" font-size="10">20</text>
+</g>
+<g id="subgroups">
+	<g>
+		<rect x="213.438" y="255.119" fill="#3C3C3B" width="26.667" height="56.693"/>
+		<rect x="213.438" y="198.425" fill="#878787" width="26.667" height="56.693"/>
+		<rect x="213.438" y="141.732" fill="#C6C6C6" width="26.667" height="56.693"/>
+		<text transform="matrix(1 0 0 1 221.21 306.2188)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">20</text>
+		<text transform="matrix(1 0 0 1 221.21 249.5259)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">20</text>
+		<text transform="matrix(1 0 0 1 221.21 192.833)" font-family="'ArialMT'" font-size="10">20</text>
+	</g>
+	<g>
+		<rect x="270.131" y="255.119" fill="#3C3C3B" width="26.667" height="56.693"/>
+		<rect x="270.131" y="198.425" fill="#878787" width="26.667" height="56.693"/>
+		<rect x="270.131" y="141.732" fill="#C6C6C6" width="26.667" height="56.693"/>
+		<text transform="matrix(1 0 0 1 277.9028 306.2188)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">20</text>
+		<text transform="matrix(1 0 0 1 277.9028 249.5259)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">20</text>
+		<text transform="matrix(1 0 0 1 277.9028 192.833)" font-family="'ArialMT'" font-size="10">20</text>
+	</g>
+	<g>
+		<rect x="326.824" y="255.119" fill="#3C3C3B" width="26.667" height="56.693"/>
+		<rect x="326.824" y="198.425" fill="#878787" width="26.667" height="56.693"/>
+		<rect x="326.824" y="141.732" fill="#C6C6C6" width="26.667" height="56.693"/>
+		<text transform="matrix(1 0 0 1 334.5957 306.2188)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">20</text>
+		<text transform="matrix(1 0 0 1 334.5957 249.5259)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">20</text>
+		<text transform="matrix(1 0 0 1 334.5957 192.833)" font-family="'ArialMT'" font-size="10">20</text>
+	</g>
+</g>
+</svg>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Ebene_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="841.891px" height="595.281px" viewBox="0 0 841.891 595.281" enable-background="new 0 0 841.891 595.281"
+	 xml:space="preserve">
+<text transform="matrix(1 0 0 1 244.4519 78.3081)" font-family="'ArialMT'" font-size="12">My scatter plot</text>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="85.04" x2="137.48" y2="85.04"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="113.386" x2="137.48" y2="113.386"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="141.732" x2="137.48" y2="141.732"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="170.078" x2="137.48" y2="170.078"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="198.424" x2="137.48" y2="198.424"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="226.771" x2="137.48" y2="226.771"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="255.118" x2="137.48" y2="255.118"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="283.465" x2="137.48" y2="283.465"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="311.812" x2="137.48" y2="311.812"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="340.159" x2="137.48" y2="340.159"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="368.505" x2="137.48" y2="368.505"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="368.504" x2="141.732" y2="372.756"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="170.079" y1="368.504" x2="170.079" y2="372.756"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="198.425" y1="368.504" x2="198.425" y2="372.756"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="226.771" y1="368.504" x2="226.771" y2="372.756"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="255.117" y1="368.504" x2="255.117" y2="372.756"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="283.463" y1="368.504" x2="283.463" y2="372.756"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="311.81" y1="368.504" x2="311.81" y2="372.756"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="340.156" y1="368.504" x2="340.156" y2="372.756"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="368.502" y1="368.504" x2="368.502" y2="372.756"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="396.848" y1="368.504" x2="396.848" y2="372.756"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="425.194" y1="368.504" x2="425.194" y2="372.756"/>
+<text transform="matrix(1 0 0 1 133.3894 382.7534)" font-family="'ArialMT'" font-size="10">250</text>
+<text transform="matrix(1 0 0 1 161.7361 382.7534)" font-family="'ArialMT'" font-size="10">300</text>
+<text transform="matrix(1 0 0 1 190.0823 382.7534)" font-family="'ArialMT'" font-size="10">350</text>
+<text transform="matrix(1 0 0 1 218.429 382.7534)" font-family="'ArialMT'" font-size="10">400</text>
+<text transform="matrix(1 0 0 1 246.7751 382.7534)" font-family="'ArialMT'" font-size="10">450</text>
+<text transform="matrix(1 0 0 1 275.1218 382.7534)" font-family="'ArialMT'" font-size="10">500</text>
+<text transform="matrix(1 0 0 1 303.468 382.7534)" font-family="'ArialMT'" font-size="10">550</text>
+<text transform="matrix(1 0 0 1 331.8147 382.7534)" font-family="'ArialMT'" font-size="10">600</text>
+<text transform="matrix(1 0 0 1 360.1609 382.7534)" font-family="'ArialMT'" font-size="10">650</text>
+<text transform="matrix(1 0 0 1 388.5076 382.7534)" font-family="'ArialMT'" font-size="10">700</text>
+<text transform="matrix(1 0 0 1 416.8538 382.7534)" font-family="'ArialMT'" font-size="10">750</text>
+<text transform="matrix(1 0 0 1 263.178 400.2534)" font-family="'ArialMT'" font-size="10">Scores X</text>
+<rect id="frame" x="141.732" y="85.04" fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" width="283.464" height="283.464"/>
+<text transform="matrix(1 0 0 1 117.9602 371.1714)" font-family="'ArialMT'" font-size="10">250</text>
+<text transform="matrix(1 0 0 1 117.9602 342.8257)" font-family="'ArialMT'" font-size="10">300</text>
+<text transform="matrix(1 0 0 1 117.9602 314.479)" font-family="'ArialMT'" font-size="10">350</text>
+<text transform="matrix(1 0 0 1 117.9602 286.1328)" font-family="'ArialMT'" font-size="10">400</text>
+<text transform="matrix(1 0 0 1 117.9602 257.7866)" font-family="'ArialMT'" font-size="10">450</text>
+<text transform="matrix(1 0 0 1 117.9602 229.4404)" font-family="'ArialMT'" font-size="10">500</text>
+<text transform="matrix(1 0 0 1 117.9602 201.0942)" font-family="'ArialMT'" font-size="10">550</text>
+<text transform="matrix(1 0 0 1 117.9602 172.748)" font-family="'ArialMT'" font-size="10">600</text>
+<text transform="matrix(1 0 0 1 117.9602 144.4019)" font-family="'ArialMT'" font-size="10">650</text>
+<text transform="matrix(1 0 0 1 117.9602 116.0557)" font-family="'ArialMT'" font-size="10">700</text>
+<text transform="matrix(1 0 0 1 117.9602 87.7095)" font-family="'ArialMT'" font-size="10">750</text>
+<rect x="141.732" y="411.024" fill="#706F6F" width="5.669" height="5.669"/>
+<text transform="matrix(1 0 0 1 150.2356 417.9429)" font-family="'ArialMT'" font-size="10">Group A</text>
+<text transform="matrix(1 0 0 1 206.9285 417.9429)" font-family="'ArialMT'" font-size="10">Group B</text>
+<text transform="matrix(1 0 0 1 263.6213 417.9429)" font-family="'ArialMT'" font-size="10">Group C</text>
+<text transform="matrix(1 0 0 1 320.3142 417.9429)" font-family="'ArialMT'" font-size="10">Group D</text>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="283.464" y1="368.504" x2="283.464" y2="85.04"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="226.771" x2="425.196" y2="226.771"/>
+<g id="gA">
+	<rect x="211.944" y="157.973" fill="#706F6F" width="5.669" height="5.669"/>
+</g>
+<circle fill="#1D1D1B" cx="200.551" cy="413.858" r="3.543"/>
+<g id="gB">
+	<circle fill="#1D1D1B" cx="363.445" cy="158.14" r="3.543"/>
+</g>
+<polygon fill="#B2B2B2" points="260.787,415.656 257.784,415.64 256.07,418.11 255.156,415.243 252.283,414.372 254.721,412.616 
+	254.66,409.606 257.08,411.388 259.916,410.4 258.973,413.257 "/>
+<g id="gC">
+	<polygon fill="#B2B2B2" points="216.486,299.075 213.483,299.059 211.768,301.529 210.855,298.662 207.982,297.791 210.42,296.035 
+		210.359,293.025 212.779,294.807 215.615,293.819 214.672,296.676 	"/>
+</g>
+<g>
+	<line fill="none" stroke="#000000" stroke-miterlimit="10" x1="313.936" y1="410.315" x2="313.936" y2="417.401"/>
+	<line fill="none" stroke="#000000" stroke-miterlimit="10" x1="310.393" y1="413.858" x2="317.48" y2="413.858"/>
+</g>
+<g id="gD">
+	<g>
+		<line fill="none" stroke="#000000" stroke-miterlimit="10" x1="362.603" y1="294.648" x2="362.603" y2="301.734"/>
+		<line fill="none" stroke="#000000" stroke-miterlimit="10" x1="359.06" y1="298.191" x2="366.146" y2="298.191"/>
+	</g>
+</g>
+<text transform="matrix(4.489659e-011 -1 1 4.489659e-011 110.4612 247.0566)" font-family="'ArialMT'" font-size="10">Scores Y</text>
+</svg>

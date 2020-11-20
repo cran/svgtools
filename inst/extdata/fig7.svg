@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.3, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Ebene_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="841.89px" height="595.28px" viewBox="0 0 841.89 595.28" enable-background="new 0 0 841.89 595.28" xml:space="preserve">
+<text transform="matrix(1 0 0 1 195.4243 78.3081)" font-family="'ArialMT'" font-size="12">My bar chart showing differences</text>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="85.04" x2="133.229" y2="85.04"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="127.559" x2="133.229" y2="127.559"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="155.905" x2="133.229" y2="155.905"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="184.251" x2="133.229" y2="184.251"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="212.598" x2="133.229" y2="212.598"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="240.944" x2="133.229" y2="240.944"/>
+<text transform="matrix(1 0 0 1 111.1094 116.0532)" font-family="'ArialMT'" font-size="10">Item 1</text>
+<text transform="matrix(1 0 0 1 111.1094 144.3994)" font-family="'ArialMT'" font-size="10">Item 2</text>
+<text transform="matrix(1 0 0 1 111.1094 172.7456)" font-family="'ArialMT'" font-size="10">Item 3</text>
+<text transform="matrix(1 0 0 1 111.1094 201.0918)" font-family="'ArialMT'" font-size="10">Item 4</text>
+<text transform="matrix(1 0 0 1 111.1094 229.438)" font-family="'ArialMT'" font-size="10">Item 5</text>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="141.732" y1="240.945" x2="141.732" y2="245.197"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="170.079" y1="240.945" x2="170.079" y2="245.197"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="198.425" y1="240.945" x2="198.425" y2="245.197"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="226.771" y1="240.945" x2="226.771" y2="245.197"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="255.117" y1="240.945" x2="255.117" y2="245.197"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="283.463" y1="240.945" x2="283.463" y2="245.197"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="311.81" y1="240.945" x2="311.81" y2="245.197"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="340.156" y1="240.945" x2="340.156" y2="245.197"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="368.502" y1="240.945" x2="368.502" y2="245.197"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="396.848" y1="240.945" x2="396.848" y2="245.197"/>
+<line fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="425.194" y1="240.945" x2="425.194" y2="245.197"/>
+<text transform="matrix(1 0 0 1 137.2866 255.1958)" font-family="'ArialMT'" font-size="10">-1</text>
+<text transform="matrix(1 0 0 1 161.4629 255.1958)" font-family="'ArialMT'" font-size="10">-0.8</text>
+<text transform="matrix(1 0 0 1 189.8091 255.1958)" font-family="'ArialMT'" font-size="10">-0.6</text>
+<text transform="matrix(1 0 0 1 218.1553 255.1958)" font-family="'ArialMT'" font-size="10">-0.4</text>
+<text transform="matrix(1 0 0 1 246.5015 255.1958)" font-family="'ArialMT'" font-size="10">-0.2</text>
+<text transform="matrix(1 0 0 1 280.6826 255.1958)" font-family="'ArialMT'" font-size="10">0</text>
+<text transform="matrix(1 0 0 1 301.939 255.1958)" font-family="'ArialMT'" font-size="10">+0.2</text>
+<text transform="matrix(1 0 0 1 330.2852 255.1958)" font-family="'ArialMT'" font-size="10">+0.4</text>
+<text transform="matrix(1 0 0 1 358.6313 255.1958)" font-family="'ArialMT'" font-size="10">+0.6</text>
+<text transform="matrix(1 0 0 1 386.9775 255.1958)" font-family="'ArialMT'" font-size="10">+0.8</text>
+<text transform="matrix(1 0 0 1 419.4937 255.1958)" font-family="'ArialMT'" font-size="10">+1</text>
+<text transform="matrix(1 0 0 1 173.6719 272.6943)" font-family="'ArialMT'" font-size="10">Difference in mean between group A and group B</text>
+<g id="group">
+	<g>
+		<rect x="226.771" y="106.299" fill="#DADADA" width="56.693" height="14.173"/>
+		<text transform="matrix(1 0 0 1 247.8911 116.0532)" font-family="'ArialMT'" font-size="10">-33</text>
+		<rect x="283.464" y="106.299" fill="#3C3C3B" width="56.693" height="14.173"/>
+		<text transform="matrix(1 0 0 1 306.2495 116.0532)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">33</text>
+	</g>
+	<g>
+		<rect x="226.771" y="134.646" fill="#DADADA" width="56.693" height="14.173"/>
+		<text transform="matrix(1 0 0 1 247.8911 144.3999)" font-family="'ArialMT'" font-size="10">-33</text>
+		<rect x="283.464" y="134.646" fill="#3C3C3B" width="56.693" height="14.173"/>
+		<text transform="matrix(1 0 0 1 306.2495 144.3999)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">33</text>
+	</g>
+	<g>
+		<rect x="226.771" y="162.993" fill="#DADADA" width="56.693" height="14.173"/>
+		<text transform="matrix(1 0 0 1 247.8911 172.7466)" font-family="'ArialMT'" font-size="10">-33</text>
+		<rect x="283.464" y="162.993" fill="#3C3C3B" width="56.693" height="14.173"/>
+		<text transform="matrix(1 0 0 1 306.2495 172.7466)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">33</text>
+	</g>
+	<g>
+		<rect x="226.771" y="191.339" fill="#DADADA" width="56.693" height="14.173"/>
+		<text transform="matrix(1 0 0 1 247.8911 201.0933)" font-family="'ArialMT'" font-size="10">-33</text>
+		<rect x="283.464" y="191.339" fill="#3C3C3B" width="56.693" height="14.173"/>
+		<text transform="matrix(1 0 0 1 306.2495 201.0933)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">33</text>
+	</g>
+	<g>
+		<rect x="226.771" y="219.686" fill="#DADADA" width="56.693" height="14.173"/>
+		<text transform="matrix(1 0 0 1 247.8911 229.4399)" font-family="'ArialMT'" font-size="10">-33</text>
+		<rect x="283.464" y="219.686" fill="#3C3C3B" width="56.693" height="14.173"/>
+		<text transform="matrix(1 0 0 1 306.2495 229.4399)" fill="#FFFFFF" font-family="'ArialMT'" font-size="10">33</text>
+	</g>
+</g>
+<rect id="frame" x="141.732" y="85.04" fill="none" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" width="283.464" height="155.906"/>
+<line stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" x1="283.464" y1="240.945" x2="283.464" y2="85.04"/>
+<text transform="matrix(1 0 0 1 158.6729 96.4556)" font-family="'ArialMT'" font-size="10">Lower mean for group A</text>
+<text transform="matrix(1 0 0 1 299.2944 96.4556)" font-family="'ArialMT'" font-size="10">Higher mean for group A</text>
+</svg>
