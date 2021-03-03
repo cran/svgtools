@@ -1,8 +1,8 @@
 Package: svgtools
 Type: Package
 Title: Manipulate SVG (Template) Files of Charts
-Version: 1.0.0
-Date: 2020-10-30
+Version: 1.0.1
+Date: 2021-03-03
 Authors@R: 
   c(person("Konrad","Oberwimmer",email="konrad.oberwimmer@iqs.gv.at",role=c("aut", "cre")),
     person("Christian","Wimmer",role="aut"),
@@ -22,10 +22,10 @@ Imports: xml2 (>= 1.3.0), stringr (>= 1.4.0), rsvg (>= 2.1), magick (>=
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr, rmarkdown
 NeedsCompilation: no
-Packaged: 2020-11-17 10:35:33 UTC; k.oberwimmer
+Packaged: 2021-03-03 13:29:25 UTC; k.oberwimmer
 Author: Konrad Oberwimmer [aut, cre],
   Christian Wimmer [aut],
   Michael Bruneforth [ctb]
 Maintainer: Konrad Oberwimmer <konrad.oberwimmer@iqs.gv.at>
 Repository: CRAN
-Date/Publication: 2020-11-20 09:00:02 UTC
+Date/Publication: 2021-03-03 23:50:02 UTC

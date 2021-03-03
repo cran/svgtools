@@ -1,9 +1,9 @@
-f03e1207ffb4f49935904e2595f021a2 *DESCRIPTION
+822fe7a5ae09ef506daa044b1261c546 *DESCRIPTION
 90f56bd405172c902af830d0542f7e91 *NAMESPACE
-7fea701664a04d37e85305ebfadc93dd *R/svgtools.R
-105d9d3c2fbff8e60bd093b65bad2eed *build/vignette.rds
+9cf52c5bf3bf15bea1739cb192d8b441 *R/svgtools.R
+dc0a6d0b01cfb2564feb5e53b779c80c *build/vignette.rds
 111d75752b5217d28fe9decf2dfad760 *inst/doc/svgtools.Rmd
-e599787c9fc1d78a9080c016f950172e *inst/doc/svgtools.html
+5e30140c595c1ec4f139bd7dfbb43dd0 *inst/doc/svgtools.html
 a9f0a6e743d46954603d5aa925424328 *inst/extdata/fig1.svg
 5430212a1bf8060ec2fcac374083177b *inst/extdata/fig11.svg
 f8f2d43097d095f6aef44a4fb8903cb8 *inst/extdata/fig13.svg

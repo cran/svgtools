@@ -791,6 +791,7 @@ percentileBar <- function(svg, frame_name, group_name, scale_real, values, align
   } else {
     if (!("data.frame" %in% class(values))) stop("Error: value has to be either a numeric vector or a dataframe.")
     if (ncol(values)<2) stop("Error: at least two values are needed for percentile bars.")
+    values <- as.matrix(values)
     for (rr in 1:nrow(values))
     {
       values1 <- values[rr,]
