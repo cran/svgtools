@@ -300,6 +300,24 @@ set_polygon_coords <- function(polygon,coords) {
   xml2::xml_set_attr(polygon,"points",points)
 }
 
+# recalculates transform matrix of rotated rects and returns string
+recalc_transformMatrix <- function(element)
+{
+  oldmatrix <- xml2::xml_attr(element, "transform")
+  x <- as.numeric(xml2::xml_attr(element, "x"))
+  y <- as.numeric(xml2::xml_attr(element, "y"))
+  width <- as.numeric(xml2::xml_attr(element, "width"))
+  height <- as.numeric(xml2::xml_attr(element, "height"))
+  cx <- x+width/2.0
+  cy <- y+height/2.0
+  matrixvalues <- substr(oldmatrix,8,nchar(oldmatrix)-1)
+  matrixvalues <- as.numeric(strsplit(matrixvalues,"\\s")[[1]])
+  matrixvalues[5] <- -cx*matrixvalues[1] + cy*matrixvalues[2] + cx
+  matrixvalues[6] <- -cx*matrixvalues[2] - cy*matrixvalues[1] + cy
+  newmatrix <- paste0("matrix(",paste(matrixvalues,collapse=" "),")")
+  return(newmatrix)
+}
+
 # converts NAs in a logical vector to FALSE
 na.as.false <- function(vect)
 {
@@ -904,7 +922,7 @@ linesSymbols_edit_lines <- function (lines_inGroup, order_lines, frame_info, val
     for (n_lines in 1:length(lines_inGroup)) {
       
       line_toChange <- lines_inGroup[order_lines[n_lines]]
-      pos <- order_lines[n_lines]
+      pos <- n_lines
       if (any(is.na(value_set[pos:(pos+1)])))
       {
         xml2::xml_set_attr(line_toChange, "display", "none")
@@ -920,7 +938,7 @@ linesSymbols_edit_lines <- function (lines_inGroup, order_lines, frame_info, val
     for (n_lines in 1:length(lines_inGroup)) {
       
       line_toChange <- lines_inGroup[order_lines[n_lines]]
-      pos <- order_lines[n_lines]
+      pos <- n_lines
       if (any(is.na(value_set[pos:(pos+1)])))
       {
         xml2::xml_set_attr(line_toChange, "display", "none")
@@ -1474,6 +1492,8 @@ linesSymbols_edit_rects <- function (svg, group, frame_info, value_set, alignmen
                       y_new <- frame_info$max_y - ((value_set[n_symbols] - frame_info$scale_min) * frame_info$scaling_y + height_half)
                       xml2::xml_set_attr(symbol_toEdit, "display", NULL)
                       xml2::xml_set_attr(symbol_toEdit, "y", y_new)
+                      if (xml2::xml_has_attr(symbol_toEdit, "transform") && grepl("^matrix",xml2::xml_attr(symbol_toEdit, "transform")))
+                        xml2::xml_set_attr(symbol_toEdit, "transform", recalc_transformMatrix(symbol_toEdit))
                     }
                   }
                   
@@ -1491,6 +1511,8 @@ linesSymbols_edit_rects <- function (svg, group, frame_info, value_set, alignmen
                       x_new <- frame_info$min_x + (value_set[n_symbols] - frame_info$scale_min) * frame_info$scaling_x - width_half
                       xml2::xml_set_attr(symbol_toEdit, "display", NULL)
                       xml2::xml_set_attr(symbol_toEdit, "x", x_new)
+                      if (xml2::xml_has_attr(symbol_toEdit, "transform") && grepl("^matrix",xml2::xml_attr(symbol_toEdit, "transform")))
+                        xml2::xml_set_attr(symbol_toEdit, "transform", recalc_transformMatrix(symbol_toEdit))
                     }
                   }
                   

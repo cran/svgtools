@@ -1,0 +1,25 @@
+=====================================
+svgtools v1.0.3 (release: 2021-04-14)
+=====================================
+
+Fixes:
+  * fixed code for correct ordering of line elements
+
+=====================================
+svgtools v1.0.2 (no release)
+=====================================
+
+Additions:
+  * added support for transform-matrix on rect elements (e.g. for rotated rectangles)
+
+=====================================
+svgtools v1.0.1 (release: 2021-03-04)
+=====================================
+
+Fixes:
+  * minor code fix so that svgtools will continue working on 
+    r-devel-linux-x86_64-debian-clang and r-devel-linux-x86_64-debian-gcc
+
+=====================================
+svgtools v1.0.0 (initial release: 2020-11-22)
+=====================================

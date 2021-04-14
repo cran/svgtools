@@ -1,6 +1,7 @@
-822fe7a5ae09ef506daa044b1261c546 *DESCRIPTION
+57dc542f72134da31981d2998b1d68ae *DESCRIPTION
 90f56bd405172c902af830d0542f7e91 *NAMESPACE
-9cf52c5bf3bf15bea1739cb192d8b441 *R/svgtools.R
+8236ccb4e46e42ea9306c34d9b95c67c *NEWS
+6980d587fb7adf409fbb53c904eb7bbc *R/svgtools.R
 dc0a6d0b01cfb2564feb5e53b779c80c *build/vignette.rds
 111d75752b5217d28fe9decf2dfad760 *inst/doc/svgtools.Rmd
 5e30140c595c1ec4f139bd7dfbb43dd0 *inst/doc/svgtools.html
