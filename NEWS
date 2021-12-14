@@ -1,4 +1,18 @@
 =====================================
+svgtools v1.1.0 (release: 2021-12-14)
+=====================================
+
+Features:
+  * added support for symbols of type and SVG tag "path" to linesSymbols(...) and scatterSymbols(...) - WorkInProgress
+  * added parameter option symbol_type="guess" to linesSymbols(...) and scatterSymbols(...) for guessing of symbol type; kept default at symbol_type=NULL
+  * changed summary_svg(...) output to more informative text with guessing of named group contents
+
+Fixes:
+  * fixed code for correct ordering of line elements (horizontal adjustment)
+  * fixed code for correct ordering of symbols (both alignments)
+  * fixed code for summary_svg(...) of used colors
+
+=====================================
 svgtools v1.0.3 (release: 2021-04-14)
 =====================================
 

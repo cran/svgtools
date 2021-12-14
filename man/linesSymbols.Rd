@@ -31,7 +31,7 @@ linesSymbols(
 
 \item{has_lines}{Are there lines? (default TRUE)}
 
-\item{symbol_type}{Character value. Accepts 'circle', 'rect', 'polygon' or 'linegroup'; see details. (default NULL = no symbols)}
+\item{symbol_type}{Character value. Accepts 'circle', 'rect', 'polygon', 'linegroup', 'path', or 'guess' for guessing of type; see details. (default NULL = no symbols)}
 
 \item{...}{Further arguments used internally by \code{\link{scatterSymbols}}.}
 }
@@ -52,6 +52,7 @@ The function currently supports the following \code{symbol_type}s:
 \item rect: XML elements of type 'rect'. Attributes 'x' or 'y' are adjusted.
 \item polygon: XML elements of type 'polygon'. Attribute 'points' is adjusted so that the centroid of the shape matches the scaled value position on the chart.
 \item linegroup: XML elements of type 'g' that contain elements of type 'line'. Attributes 'x1' and 'x2' or 'y1' and 'y2' of those lines are adjusted so that the mean x- or y-coordinate of all lines in the group matches the scaled value position on the chart.
+\item path: XML elements of type 'path'. The first command of attribute 'd' is adjusted. The center of path is defined as the midpoint between minimum and maximum x- and y-coordinates of the shape.
 }
 }
 \examples{

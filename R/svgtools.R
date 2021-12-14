@@ -25,6 +25,9 @@ read_svg <- function(file, enc = "UTF-8", summary = FALSE, display = FALSE) {
   # print svg
   if (display) {display_svg(svg_in)}
   
+  # set svg_obj class
+  class(svg_in) <- c(class(svg_in),"svg_obj")
+  
   # return
   return(svg_in)
   
@@ -48,69 +51,92 @@ read_svg <- function(file, enc = "UTF-8", summary = FALSE, display = FALSE) {
 #' @export
 summary_svg <- function(svg) {
   
-  print ("************************")
-  print ("** -- SVG SUMMARY: -- **")
-  print ("************************")
-  
+  # Available Frames
+  rects <- xml2::xml_find_all(svg, "/svg/rect")
+  tlr <- character()
+  for (rect in rects) if (xml2::xml_has_attr(rect, "id")) tlr <- c(tlr,xml2::xml_attr(rect, "id"))
+  print(paste0("-- Top Level Named Rects (Frames): ",ifelse(length(tlr)>0,paste(tlr,collapse="; "),"NONE")))
+
   # Named Groups
-  named_groups <- xml2::xml_find_all(svg, "/svg/g")
-  print("-- NAMED GROUPS:")
-  for (group in named_groups)
+  groups <- xml2::xml_find_all(svg, "/svg/g")
+  tlg <- character()
+  for (group in groups)
   {
     if (xml2::xml_has_attr(group, "id"))
     {
       group_name <- xml2::xml_attr(group, "id")
-      num_children <- length(xml2::xml_children(group))
-      print(paste0(group_name ," with ", num_children, " children"))
+      possibleSymbols <- linesSymbols_guess(group)
+      has_lines <- any(xml2::xml_name(xml2::xml_children(group))=="line")
+      has_text <- any(xml2::xml_name(xml2::xml_children(group))=="text")
+      has_groups <- any(xml2::xml_name(xml2::xml_children(group))=="g")
+      found_type <- FALSE
+      if (is.null(possibleSymbols) && has_lines && !has_groups) { #keine Symbole oder Gruppen, aber Linien
+        tlg <- c(tlg,paste0(group_name, " (lines)"))
+        found_type <- TRUE
+        next
+      }
+      if (is.null(possibleSymbols) && !has_lines && has_groups) { #vermutlich Gruppe von Balken
+        childElements <- xml2::xml_children(group)
+        is_barchart <- TRUE
+        is_barchart_with_text <- NA
+        for (childElement in childElements)
+        {
+          if (!any(xml2::xml_name(xml2::xml_children(childElement))=="rect")) is_barchart <- FALSE #sobald eine Gruppe ohne Rect-Elemente gefunden wird, ist es wohl doch kein Balkendiagramm
+          if (is.na(is_barchart_with_text)) is_barchart_with_text <- any(xml2::xml_name(xml2::xml_children(childElement))=="text") #entscheide aus der ersten Gruppe, ob Texte vorliegen
+          if (is_barchart_with_text != any(xml2::xml_name(xml2::xml_children(childElement))=="text")) is_barchart <- FALSE #sollte sich das aendern, ist es wohl doch kein Balkendiagramm
+        }
+        if (is_barchart)
+        {
+          tlg <- c(tlg,paste0(group_name," (",sum(xml2::xml_name(xml2::xml_children(group))=="g")," bar chart",ifelse(is_barchart_with_text," with text"," without text"),")"))
+          found_type <- TRUE
+          next
+        }
+      }
+      if (!is.null(possibleSymbols) && possibleSymbols != "rect") { #alle Symbole ausser rect sind eindeutig, rect koennten auch Balken sein
+        tlg <- c(tlg,paste0(group_name, " (symbols of type '",possibleSymbols,"'",ifelse(has_lines," with lines"," without lines"),")"))
+        found_type <- FALSE
+        next
+      }
+      if (!is.null(possibleSymbols) && possibleSymbols == "rect") { #alle Symbole ausser rect sind eindeutig, rect koennten auch Balken sein
+        tlg <- c(tlg,paste0(group_name, " (symbols of type '",possibleSymbols,"'",ifelse(has_lines," with lines"," without lines")," OR single bar chart",ifelse(has_text," with text"," without text"),")"))
+        found_type <- FALSE
+        next
+      }
+      if (!found_type) tlg <- c(tlg,paste0(group_name, " (UNKNOWN)"))
     }
   }
-  
-  # Available Frames
-  rects <- xml2::xml_find_all(svg, "/svg/rect")
-  print("-- AVAILABLE FRAMES:")
-  for (rect in rects) {
-    if (xml2::xml_has_attr(rect, "id"))
-    {
-      print(xml2::xml_attr(rect, "id"))
-    }
+  if (length(tlg)==0) print("-- Top Level Named Groups: NONE")
+  if (length(tlg)>0)
+  {
+    print("-- Top Level Named Groups (Available Elements):")
+    for (tlg1 in tlg) print(tlg1)
   }
   
   # Used Fonts
-  print("-- USED FONTS:")
   text_elements <- xml2::xml_find_all(svg, "text")
   used_fonts <- character()
   for (font in text_elements) {
     used_fonts <- c(used_fonts, xml2::xml_attr(font, "font-family"))
   }
-  print(unique(used_fonts))
+  used_fonts <- unique(used_fonts)
+  print(paste0("-- Used Fonts: ",ifelse(length(used_fonts)>0,paste(used_fonts,collapse="; "),"NONE")))
   
   # Used Font Sizes
-  print("-- USED FONT SIZES:")
   used_sizes <- character()
   for (size in text_elements) {
     used_sizes <- c(used_sizes, xml2::xml_attr(size, "font-size"))
   }
-  print(unique(used_sizes))
+  used_sizes <- unique(used_sizes)
+  print(paste0("-- Used Font Sizes: ",ifelse(length(used_sizes)>0,paste(used_sizes,collapse="; "),"NONE")))
   
   # Colors
-  print("-- USED COLORS:")
-  line_elements <- xml2::xml_find_all(svg, "line")
-  rect_elements <- xml2::xml_find_all(svg, "rect")
   used_colors <- character()
-  for (col in text_elements) {
-    used_colors <- c(used_colors, xml2::xml_attr(xml2::xml_children(col), "fill"))
+  for (element in xml2::xml_find_all(svg,xpath="//*")) {
+    used_colors <- c(used_colors, xml2::xml_attr(element, "fill"))
+    used_colors <- c(used_colors, xml2::xml_attr(element, "stroke"))
   }
-  for (col in rect_elements) {
-    used_colors <- c(used_colors, xml2::xml_attr(col, "fill"))
-  }
-  for (col in line_elements) {
-    used_colors <- c(used_colors, xml2::xml_attr(col, "stroke"))
-  }
-  for (col in line_elements) {
-    used_colors <- c(used_colors, xml2::xml_attr(col, "fill"))
-  }
-  used_colors <- as.character(stats::na.omit(unique(used_colors)))
-  print(used_colors)
+  used_colors <- unique(setdiff(stats::na.omit(used_colors),"none"))
+  print(paste0("-- Used Colors: ",ifelse(length(used_colors)>0,paste(used_colors,collapse="; "),"NONE")))
   
 }
 
@@ -190,6 +216,76 @@ write_svg <- function(svg, file, remove_hidden = TRUE, flatten = FALSE) {
 }
 
 ### ALLGEMEINE HILFSFUNKTIONEN ----
+
+#gibt einen Vektor mit SVG-Pfad-Kommandos zurueck
+getPathCommands <- function() {
+  return(c("M","m","L","l","H","h","V","v","C","c","S","s","Q","q","T","t","A","a","Z","z"))
+}
+
+#gibt einen neuen Vektor (min_x,max_x,min_y,max_y) zurueck, nachdem mit neuen Werten verglichen wurde
+setNewMinMax <- function(minmax,x,y)
+{
+  if (x < minmax[1]) minmax[1] <- x
+  if (x > minmax[2]) minmax[2] <- x
+  if (y < minmax[3]) minmax[3] <- y
+  if (y > minmax[4]) minmax[4] <- y
+  return(minmax)
+}
+
+#setzt einen neuen Startpunkt eines Pfad-Objekts
+setNewPathBegin <- function(path,x,y)
+{
+  path.string <- xml2::xml_attr(path,"d")
+  pos1 <- regexpr(pattern = paste(setdiff(getPathCommands(),c("M","m")),collapse = "|"),text = path.string)
+  if (pos1>1)
+  {
+    path.string <- substr(path.string,pos1,nchar(path.string))
+    path.string <- paste0("M",x," ",y,path.string)
+    xml2::xml_set_attr(x = path,attr = "d",value = path.string)
+  }
+}
+
+#berechnet die minimale und maximale Ausbreitung der Kurve bis hin zur 10. Kommastelle - die gute Version :-)
+getMinMaxCurve <- function(controlpoints)
+{
+  sequence <- seq(0,1,length=10)
+  pointsOnCurve <- bezier::bezier(t = sequence,p = controlpoints[2:3,],start = controlpoints[1,],end = controlpoints[4,],deg = nrow(controlpoints)-1)
+  checks <- list(
+    "min_x" = list(column = 1, FUNcriterion = min),
+    "max_x" = list(column = 1, FUNcriterion = max),
+    "min_y" = list(column = 2, FUNcriterion = min),
+    "max_y" = list(column = 2, FUNcriterion = max)
+  )
+  results <- list()
+  for (cc in names(checks))
+  {
+    check <- checks[[cc]]
+    old.value <- NA
+    seq1 <- sequence
+    points1 <- pointsOnCurve
+    new.value <- do.call(check$FUNcriterion,list(points1[,check$column]))
+    while (is.na(old.value) || abs(old.value-new.value)>10e-10)
+    {
+      old.value <- new.value
+      pos1 <- which(points1[,check$column]==old.value)
+      pos1.min <- ifelse(1 %in% pos1,1,min(pos1)-1)
+      pos1.max <- ifelse(nrow(points1) %in% pos1,nrow(points1),max(pos1)+1)
+      if (pos1.min==1 && pos1.max==nrow(points1)) break #das Minimum bzw. Maximum liegt sowohl am Anfang als auch Ende der Kurve. In dem Fall ist eine weitere Suche hinfaellig.
+      seq1 <- seq(seq1[pos1.min],seq1[pos1.max],length=10)
+      points1 <- bezier::bezier(t = seq1,p = controlpoints[2:3,],start = controlpoints[1,],end = controlpoints[4,],deg = 3)
+      new.value <- do.call(check$FUNcriterion,list(points1[,check$column]))
+    }
+    results[[cc]] <- new.value
+  }
+  return(results)
+}
+
+#berechnet die minimale und maximale Ausbreitung von Arcs bis hin zur 10. Kommastelle
+getMinMaxArc <- function(arcparams)
+{
+  stop("Error: currently, svgtools does not support A- or a-command in path definition!") #TODO
+  return(NULL)
+}
 
 # Liest Infos des genannten Rahmens aus und berechnet Skalierung
 # TODO: Check, ob sinnvolle Skala eingegeben wurde (?)
@@ -751,7 +847,7 @@ diffBar <- function(svg, frame_name, group_name, scale_real, values, nullvalue=0
     offset <- rep(nullvalue - min(scale_real),nrow(values))
     for (rr in 1:nrow(values))
     {
-      rowvalues <- as.vector(values[rr,])
+      rowvalues <- as.numeric(values[rr,,drop=TRUE])
       if (any(na.as.false(rowvalues<nullvalue))) offset[rr] <- offset[rr] - abs(sum(rowvalues[na.as.false(rowvalues<nullvalue)]))
     }
   }
@@ -852,6 +948,34 @@ linesSymbols_in <- function (svg_in, group_name) {
   lineGroup <- named_groups[index_group]
 }
 
+linesSymbols_guess <- function(group)
+{
+  deferedType <- NULL
+  childElements <- xml2::xml_children(group)
+  for (childElement in childElements)
+  {
+    if (xml2::xml_name(childElement)=="line") next
+    for (type1 in c("rect","circle","polygon","path")) #alle ausser linegroup
+    {
+      if (xml2::xml_name(childElement)==type1)
+      {
+        if (!is.null(deferedType) && deferedType != type1) return(NA)
+        if (is.null(deferedType)) deferedType <- type1
+      }
+    }
+    if (xml2::xml_name(childElement)=="g") #linegroup
+    {
+      grandchildElements <- xml2::xml_children(childElement)
+      if (all(xml2::xml_name(grandchildElements)=="line"))
+      {
+        if (!is.null(deferedType) && deferedType != "linegroup") return(NA)
+        if (is.null(deferedType)) deferedType <- "linegroup"
+      }
+    }
+  }
+  return(deferedType)
+}
+
 linesSymbols_duplicate_lines <- function (lineGroup, alignment, number) {
   
   newline <- xml2::xml_find_first(lineGroup[[1]], "./line")
@@ -905,8 +1029,8 @@ linesSymbols_order_lines <- function (lines_inGroup, alignment) {
     lines_y2_values <- c(lines_y2_values, as.numeric(xml2::xml_attr(lines_inGroup[n_lines], "y2")))
   }
   
-  order_lines_x <- order(lines_x1_values)
-  order_lines_y <- order(-lines_y1_values)
+  order_lines_x <- order(order(lines_x1_values))
+  order_lines_y <- order(order(lines_y1_values))
   
   if (alignment == "vertical") {order_lines <- order_lines_x}
   if (alignment == "horizontal") {order_lines <- order_lines_y}
@@ -949,6 +1073,450 @@ linesSymbols_edit_lines <- function (lines_inGroup, order_lines, frame_info, val
       }
     }
   }
+  
+}
+
+# pull information about paths in group (start_x, start_y, order, ...) and adjust paths for repositioning
+linesSymbols_info_paths <- function (paths_inGroup) {
+  
+  dat_paths <- data.frame(Index = numeric(),start_x = numeric(),start_y = numeric(),offset_x = numeric(),offset_y = numeric(),min_x = numeric(),max_x = numeric(),min_y = numeric(),max_y = numeric())
+  
+  #zeichne alle Pfade virtuell nach, um ihre Ausdehnungen zu eruieren
+  for (pp in 1:length(paths_inGroup))
+  {
+    dat_paths[pp,"Index"] <- pp
+    minmax <- c(Inf,-Inf,Inf,-Inf)
+    start_x <- start_y <- as.numeric(NA)
+    subpath_x <- subpath_y <- as.numeric(NA)
+    cur_x <- cur_y <- as.numeric(NA)
+    path <- paths_inGroup[pp]
+    path.str <- xml2::xml_attr(x = path,attr = "d")
+    path.str <- gsub(pattern = "-",replacement = " -",x = path.str,ignore.case = TRUE) #bereinige vorab die komprimierten Strings
+    path.str <- gsub(pattern = ",",replacement = " ",x = path.str,ignore.case = TRUE)
+    while (regexpr(pattern = "\\.[0-9]*\\.[0-9]*",text = path.str)!=-1) #das ist tricky: Eine Angabe wie 2.5.6 ist tatsaechlich moeglich und bedeutet 2,5 und 0,6 :-(
+    {
+      pos1 <- regexpr(pattern = "\\.[0-9]*\\.[0-9]*",text = path.str)
+      dot2 <- gregexpr(pattern = "\\.",text = substr(path.str,pos1,nchar(path.str)))[[1]][2]
+      path.str <- paste0(substr(path.str,1,pos1+dot2-2)," ",substr(path.str,pos1+dot2-1,nchar(path.str)))
+    }
+    for (pc in getPathCommands()) path.str <- gsub(pattern = pc,replacement = paste0("\\$",pc),x = path.str)
+    path.split <- strsplit(x = path.str,split = "\\$")[[1]] #teile nach Kommandos auf
+    ecp_x <- ecp_y <- qcp_x <- qcp_y <- NA #zum Mitspeichern der alten End Control Points fuer S/s und Quadratic Control Points fuer T/t
+    #damit im Nachhinein eine Verschiebung nur mit dem ersten moveto-Kommando moeglich ist, muessen hier alle absoluten Angaben in relative umgebaut werden
+    for (cc in 1:length(path.split))
+    {
+      pc <- path.split[cc]
+      handled.command <- FALSE
+      pc <- gsub(pattern = "^ *",replacement = "",x = pc,ignore.case = TRUE)
+      if (nzchar(pc)==0) next
+      if (!substr(pc,1,1) %in% getPathCommands()) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+      suppressWarnings(coords <- as.numeric(strsplit(x = substr(pc,2,nchar(pc)),split = " ")[[1]]))
+      coords <- stats::na.omit(coords)
+      if (substr(pc,1,1) == "M") {
+        if (length(coords) < 2 || length(coords)%%2 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        newpc <- ""
+        for (ii in 1:(length(coords)/2))
+        {
+          if (is.na(start_x)) { #Am Beginn ist eine absolute Angabe erwuenscht.
+            start_x <- coords[ii*2-1]
+            start_y <- coords[ii*2]
+            newpc <- paste0("M",round(start_x,10)," ",round(start_y,10))
+          } else newpc <- paste0(newpc,"m",round(coords[ii*2-1]-cur_x,10)," ",round(coords[ii*2]-cur_y,10)) #weitere absolute MoveTos muessen relativiert werden
+          cur_x <- subpath_x <- coords[ii*2-1]
+          cur_y <- subpath_y <- coords[ii*2]
+          minmax <- setNewMinMax(minmax,cur_x,cur_y)
+        }
+        path.split[cc] <- newpc
+        ecp_x <- ecp_y <- qcp_x <- qcp_y <- NA
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "m") {
+        if (length(coords) < 2 || length(coords)%%2 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        for (ii in 1:(length(coords)/2))
+        {
+          cur_x <- subpath_x <- (cur_x + coords[ii*2-1])
+          cur_y <- subpath_y <- (cur_y + coords[ii*2])
+          minmax <- setNewMinMax(minmax,cur_x,cur_y)
+        }
+        ecp_x <- ecp_y <- qcp_x <- qcp_y <- NA
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "L") {
+        if (length(coords) < 2 || length(coords)%%2 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        newpc <- ""
+        for (ii in 1:(length(coords)/2))
+        {
+          newpc <- paste0(newpc,"l",round(coords[ii*2-1]-cur_x,10)," ",round(coords[ii*2]-cur_y,10))
+          cur_x <- coords[ii*2-1]
+          cur_y <- coords[ii*2]
+          minmax <- setNewMinMax(minmax,cur_x,cur_y)
+        }
+        path.split[cc] <- newpc
+        ecp_x <- ecp_y <- qcp_x <- qcp_y <- NA
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "l") {
+        if (length(coords) < 2 || length(coords)%%2 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        for (ii in 1:(length(coords)/2))
+        {
+          cur_x <- (cur_x + coords[ii*2-1])
+          cur_y <- (cur_y + coords[ii*2])
+          minmax <- setNewMinMax(minmax,cur_x,cur_y)
+        }
+        ecp_x <- ecp_y <- qcp_x <- qcp_y <- NA
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "H") {
+        if (length(coords) < 1) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        newpc <- ""
+        for (ii in 1:length(coords))
+        {
+          newpc <- paste0(newpc,"h",round(coords[ii]-cur_x,10))
+          cur_x <- coords[ii]
+          minmax <- setNewMinMax(minmax,cur_x,cur_y)
+        }
+        path.split[cc] <- newpc
+        ecp_x <- ecp_y <- qcp_x <- qcp_y <- NA
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "h") {
+        if (length(coords) < 1) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        for (ii in 1:length(coords))
+        {
+          cur_x <- (cur_x + coords[ii])
+          minmax <- setNewMinMax(minmax,cur_x,cur_y)
+        }
+        ecp_x <- ecp_y <- qcp_x <- qcp_y <- NA
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "V") {
+        if (length(coords) < 1) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        newpc <- ""
+        for (ii in 1:length(coords))
+        {
+          newpc <- paste0(newpc,"v",round(coords[ii]-cur_y,10))
+          cur_y <- coords[ii]
+          minmax <- setNewMinMax(minmax,cur_x,cur_y)
+        }
+        path.split[cc] <- newpc
+        ecp_x <- ecp_y <- qcp_x <- qcp_y <- NA
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "v") {
+        if (length(coords) < 1) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        for (ii in 1:length(coords))
+        {
+          cur_y <- (cur_y + coords[ii])
+          minmax <- setNewMinMax(minmax,cur_x,cur_y)
+        }
+        ecp_x <- ecp_y <- qcp_x <- qcp_y <- NA
+        handled.command <- TRUE
+      }
+      if ((substr(pc,1,1) == "C" || substr(pc,1,1) == "c") && !requireNamespace("bezier")) stop(paste0("Error: package 'bezier' required for handling curves in path ",paths_inGroup[pp],"!"))
+      if (substr(pc,1,1) == "C") {
+        if (length(coords) < 6 || length(coords)%%6 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        newpc <- ""
+        for (ii in 1:(length(coords)/6))
+        {
+          newpc <- paste0(newpc,"c",
+                          round(coords[ii*6-5]-cur_x,10)," ",
+                          round(coords[ii*6-4]-cur_y,10)," ",
+                          round(coords[ii*6-3]-cur_x,10)," ",
+                          round(coords[ii*6-2]-cur_y,10)," ",
+                          round(coords[ii*6-1]-cur_x,10)," ",
+                          round(coords[ii*6]-cur_y,10))
+          points <- matrix(c(cur_x,cur_y,coords[ii*6-5:0]),nrow=4,ncol=2,byrow=TRUE)
+          enclosing.rect <- getMinMaxCurve(points)
+          minmax <- setNewMinMax(minmax,enclosing.rect$min_x,enclosing.rect$min_y)
+          minmax <- setNewMinMax(minmax,enclosing.rect$max_x,enclosing.rect$max_y)
+          ecp_x <- coords[ii*6-3]
+          ecp_y <- coords[ii*6-2]
+          qcp_x <- qcp_y <- NA
+          cur_x <- coords[ii*6-1]
+          cur_y <- coords[ii*6]
+        }
+        path.split[cc] <- newpc
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "c") {
+        if (length(coords) < 6 || length(coords)%%6 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        for (ii in 1:(length(coords)/6))
+        {
+          points <- matrix(c(cur_x,cur_y,rep(c(cur_x,cur_y),3)+coords[ii*6-5:0]),nrow=4,ncol=2,byrow=TRUE)
+          enclosing.rect <- getMinMaxCurve(points)
+          minmax <- setNewMinMax(minmax,enclosing.rect$min_x,enclosing.rect$min_y)
+          minmax <- setNewMinMax(minmax,enclosing.rect$max_x,enclosing.rect$max_y)
+          ecp_x <- (cur_x + coords[ii*6-3])
+          ecp_y <- (cur_y + coords[ii*6-2])
+          qcp_x <- qcp_y <- NA
+          cur_x <- (cur_x + coords[ii*6-1])
+          cur_y <- (cur_y + coords[ii*6])
+        }
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "S") {
+        if (length(coords) < 4 || length(coords)%%4 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        newpc <- ""
+        for (ii in 1:(length(coords)/4))
+        {
+          newpc <- paste0(newpc,"s",
+                          round(coords[ii*4-3]-cur_x,10)," ",
+                          round(coords[ii*4-2]-cur_y,10)," ",
+                          round(coords[ii*4-1]-cur_x,10)," ",
+                          round(coords[ii*4]-cur_y,10))
+          if (is.na(ecp_x)) points <- matrix(c(cur_x,cur_y,cur_x,cur_y,coords[ii*4-3:0]),nrow=4,ncol=2,byrow=TRUE)
+          if (!is.na(ecp_x)) points <- matrix(c(cur_x,cur_y,ecp_x,ecp_y,coords[ii*4-3:0]),nrow=4,ncol=2,byrow=TRUE)
+          enclosing.rect <- getMinMaxCurve(points)
+          minmax <- setNewMinMax(minmax,enclosing.rect$min_x,enclosing.rect$min_y)
+          minmax <- setNewMinMax(minmax,enclosing.rect$max_x,enclosing.rect$max_y)
+          ecp_x <- coords[ii*4-3]
+          ecp_y <- coords[ii*4-2]
+          qcp_x <- qcp_y <- NA
+          cur_x <- coords[ii*4-1]
+          cur_y <- coords[ii*4]
+        }
+        path.split[cc] <- newpc
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "s") {
+        if (length(coords) < 4 || length(coords)%%4 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        for (ii in 1:(length(coords)/4))
+        {
+          if (is.na(ecp_x)) points <- matrix(c(cur_x,cur_y,cur_x,cur_y,rep(c(cur_x,cur_y),2)+coords[ii*4-3:0]),nrow=4,ncol=2,byrow=TRUE)
+          if (!is.na(ecp_x)) points <- matrix(c(cur_x,cur_y,ecp_x,ecp_y,rep(c(cur_x,cur_y),2)+coords[ii*4-3:0]),nrow=4,ncol=2,byrow=TRUE)
+          enclosing.rect <- getMinMaxCurve(points)
+          minmax <- setNewMinMax(minmax,enclosing.rect$min_x,enclosing.rect$min_y)
+          minmax <- setNewMinMax(minmax,enclosing.rect$max_x,enclosing.rect$max_y)
+          ecp_x <- (cur_x + coords[ii*4-3])
+          ecp_y <- (cur_y + coords[ii*4-2])
+          qcp_x <- qcp_y <- NA
+          cur_x <- (cur_x + coords[ii*4-1])
+          cur_y <- (cur_y + coords[ii*4])
+        }
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "Q") {
+        if (length(coords) < 4 || length(coords)%%4 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        newpc <- ""
+        for (ii in 1:(length(coords)/4))
+        {
+          newpc <- paste0(newpc,"q",
+                          round(coords[ii*4-3]-cur_x,10)," ",
+                          round(coords[ii*4-2]-cur_y,10)," ",
+                          round(coords[ii*4-1]-cur_x,10)," ",
+                          round(coords[ii*4]-cur_y,10))
+          points <- matrix(c(cur_x,cur_y,coords[ii*4-3:0]),nrow=3,ncol=2,byrow=TRUE)
+          enclosing.rect <- getMinMaxCurve(points)
+          minmax <- setNewMinMax(minmax,enclosing.rect$min_x,enclosing.rect$min_y)
+          minmax <- setNewMinMax(minmax,enclosing.rect$max_x,enclosing.rect$max_y)
+          qcp_x <- coords[ii*4-3]
+          qcp_y <- coords[ii*4-2]
+          ecp_x <- ecp_y <- NA
+          cur_x <- coords[ii*4-1]
+          cur_y <- coords[ii*4]
+        }
+        path.split[cc] <- newpc
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "q") {
+        if (length(coords) < 4 || length(coords)%%4 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        for (ii in 1:(length(coords)/4))
+        {
+          points <- matrix(c(cur_x,cur_y,rep(c(cur_x,cur_y),2)+coords[ii*4-3:0]),nrow=4,ncol=2,byrow=TRUE)
+          enclosing.rect <- getMinMaxCurve(points)
+          minmax <- setNewMinMax(minmax,enclosing.rect$min_x,enclosing.rect$min_y)
+          minmax <- setNewMinMax(minmax,enclosing.rect$max_x,enclosing.rect$max_y)
+          qcp_x <- (cur_x + coords[ii*4-3])
+          qcp_y <- (cur_y + coords[ii*4-2])
+          ecp_x <- ecp_y <- NA
+          cur_x <- (cur_x + coords[ii*4-1])
+          cur_y <- (cur_y + coords[ii*4])
+        }
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "T") {
+        if (length(coords) < 2 || length(coords)%%2 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        newpc <- ""
+        for (ii in 1:(length(coords)/2))
+        {
+          newpc <- paste0(newpc,"t",
+                          round(coords[ii*2-1]-cur_x,10)," ",
+                          round(coords[ii*2]-cur_y,10))
+          if (is.na(qcp_x)) points <- matrix(c(cur_x,cur_y,cur_x,cur_y,coords[ii*2-1:0]),nrow=4,ncol=2,byrow=TRUE)
+          if (!is.na(qcp_x)) points <- matrix(c(cur_x,cur_y,qcp_x,qcp_y,coords[ii*2-1:0]),nrow=4,ncol=2,byrow=TRUE)
+          enclosing.rect <- getMinMaxCurve(points)
+          minmax <- setNewMinMax(minmax,enclosing.rect$min_x,enclosing.rect$min_y)
+          minmax <- setNewMinMax(minmax,enclosing.rect$max_x,enclosing.rect$max_y)
+          ecp_x <- ecp_y <- NA
+          cur_x <- coords[ii*2-1]
+          cur_y <- coords[ii*2]
+        }
+        path.split[cc] <- newpc
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "t") {
+        if (length(coords) < 2 || length(coords)%%2 != 0) stop(paste0("Error: Invalid path command '",pc,"' in path ",paths_inGroup[pp],"!"))
+        for (ii in 1:(length(coords)/2))
+        {
+          if (is.na(ecp_x)) points <- matrix(c(cur_x,cur_y,cur_x,cur_y,c(cur_x,cur_y)+coords[ii*2-1:0]),nrow=4,ncol=2,byrow=TRUE)
+          if (!is.na(ecp_x)) points <- matrix(c(cur_x,cur_y,ecp_x,ecp_y,c(cur_x,cur_y)+coords[ii*2-1:0]),nrow=4,ncol=2,byrow=TRUE)
+          enclosing.rect <- getMinMaxCurve(points)
+          minmax <- setNewMinMax(minmax,enclosing.rect$min_x,enclosing.rect$min_y)
+          minmax <- setNewMinMax(minmax,enclosing.rect$max_x,enclosing.rect$max_y)
+          ecp_x <- ecp_y <- NA
+          cur_x <- (cur_x + coords[ii*2-1])
+          cur_y <- (cur_y + coords[ii*2])
+        }
+        handled.command <- TRUE
+      }
+      if (substr(pc,1,1) == "A") {
+        #TODO WIP
+        getMinMaxArc(NULL)
+      }
+      if (substr(pc,1,1) == "a") {
+        #TODO WIP
+        getMinMaxArc(NULL)
+      }
+      if (substr(pc,1,1) == "Z" || substr(pc,1,1) == "z")
+      {
+        cur_x <- subpath_x
+        cur_y <- subpath_y
+        handled.command <- TRUE
+      }
+      #fail-safe, wenn ein Pfad-Kommando noch nicht angelegt wurde
+      if (!handled.command) stop(paste0("Error: Can't handle command '",substr(pc,1,1),"' in path ",paths_inGroup[pp],"!"))
+    }
+    xml2::xml_set_attr(x = path,attr = "d",value = paste(path.split,collapse = ""))
+    dat_paths[pp,"start_x"] <- start_x
+    dat_paths[pp,"start_y"] <- start_y
+    dat_paths[pp,"offset_x"] <- (start_x - (minmax[1]+minmax[2])/2.0)
+    dat_paths[pp,"offset_y"] <- (start_y - (minmax[3]+minmax[4])/2.0)
+    dat_paths[pp,"min_x"] <- minmax[1]
+    dat_paths[pp,"max_x"] <- minmax[2]
+    dat_paths[pp,"min_y"] <- minmax[3]
+    dat_paths[pp,"max_y"] <- minmax[4]
+  }
+  
+  # order of paths
+  dat_paths$order_x <- order(order(dat_paths$start_x))
+  dat_paths$order_y <- order(order(dat_paths$start_y))
+  
+  # return
+  return(dat_paths)
+  
+}
+
+linesSymbols_edit_paths <- function (svg_in, group, frame_info, value_set, alignment, scatter = FALSE) {
+  
+  # available paths in group
+  paths_inGroup <- xml2::xml_find_all(group, "./path")
+  if (length(paths_inGroup)!=length(value_set))
+  {
+    if (length(paths_inGroup)>=1 && scatter)
+    {
+      while (length(paths_inGroup)!=length(value_set))
+      {
+        if (length(paths_inGroup)<length(value_set)) { element <- xml2::xml_find_first(group, "./path"); xml2::xml_add_sibling(element,element) }
+        if (length(paths_inGroup)>length(value_set)) { element <- xml2::xml_find_first(group, "./path"); xml2::xml_remove(element) }
+        paths_inGroup <- xml2::xml_find_all(group, "./path")
+      }
+    } else if (length(paths_inGroup)==2)
+    {
+      warning("Warning: Only two path-elements in group. Duplicating with assumption of fixed shape and constant distances.")
+      dat_paths <- linesSymbols_info_paths(paths_inGroup)
+      diff_x <- abs(dat_paths[1,"start_x"]-dat_paths[2,"start_x"])
+      diff_y <- abs(dat_paths[1,"start_y"]-dat_paths[2,"start_y"])
+      firstpath <- xml2::xml_find_first(group, "./path")[[1]]
+      for (ee in 3:length(value_set))
+      {
+        newpath <- xml2::xml_add_sibling(.x = firstpath,.value=firstpath)
+        if (alignment == "vertical")
+        {
+          dat_paths <- dat_paths[order(dat_paths$order_x),]
+          setNewPathBegin(newpath,(dat_paths[1,"start_x"]+(ee-1)*diff_x),dat_paths[1,"start_y"])
+        }
+        if (alignment == "horizontal")
+        {
+          dat_paths <- dat_paths[order(dat_paths$order_y),]
+          setNewPathBegin(newpath,dat_paths[1,"start_x"],(dat_paths[1,"start_y"]+(ee-1)*diff_y))
+        }
+      }
+    } else if (length(paths_inGroup)==1 && length(xml2::xml_find_all(group, "./line"))>0)
+    {
+      warning("Warning: Only one path-element in group. Duplicating with assumption of fixed shape and constant distances (depending on the line-element).")
+      line <- xml2::xml_find_first(group, "./line")
+      height <- abs(as.numeric(xml2::xml_attr(line, "y1")) - as.numeric(xml2::xml_attr(line, "y2")))
+      width <- abs(as.numeric(xml2::xml_attr(line, "x1")) - as.numeric(xml2::xml_attr(line, "x2")))
+      dat_paths <- linesSymbols_info_paths(paths_inGroup)
+      firstpath <- xml2::xml_find_first(group, "./path")[[1]]
+      for (ee in 2:length(value_set))
+      {
+        newpath <- xml2::xml_add_sibling(.x = firstpath,.value=firstpath)
+        if (alignment == "vertical") setNewPathBegin(newpath,(dat_paths[1,"start_x"]+(ee-1)*width),dat_paths[1,"start_y"])
+        if (alignment == "horizontal") setNewPathBegin(newpath,dat_paths[1,"start_x"],(dat_paths[1,"start_y"]+(ee-1)*height))
+      }
+    } else stop(paste0("Error: Wrong number of path-elements in group (",length(paths_inGroup)," paths, ",length(value_set)," expected)."))
+    paths_inGroup <- xml2::xml_find_all(group, "./path")
+  }
+  
+  # information about paths
+  dat_paths <- linesSymbols_info_paths(paths_inGroup)
+  if (scatter)
+  {
+    dat_paths$order_x <- 1:nrow(dat_paths)
+    dat_paths$order_y <- 1:nrow(dat_paths)
+  }
+  
+  switch(alignment,
+         
+         vertical = {
+           
+           for (pp in 1:length(paths_inGroup)) {
+             dat_path <- dat_paths[pp,,drop=FALSE]
+             path_toChange <- paths_inGroup[pp]
+             value <- value_set[dat_path$order_x]
+             if (is.na(value))
+             {
+               xml2::xml_set_attr(path_toChange,"display","none")
+             } else {
+               location_y <- (frame_info$max_y - (value - frame_info$scale_min) * frame_info$scaling_y)
+               xml2::xml_set_attr(path_toChange,"display",NULL)
+               setNewPathBegin(path_toChange,dat_path$start_x,location_y+dat_path$offset_y)
+               if (TRUE && pp==1) #Visueller Check des einschliessendes Rechtecks
+               {
+                 newrect <- xml2::xml_add_child(.x = group[[1]],.value = path_toChange[[1]])
+                 xml2::xml_set_name(newrect,"rect")
+                 attribs <- xml2::xml_attrs(newrect)
+                 for (attrib in names(attribs)) xml2::xml_set_attr(newrect,attrib,NULL)
+                 xml2::xml_set_attr(newrect,"fill","none")
+                 xml2::xml_set_attr(newrect,"stroke","#000000")
+                 xml2::xml_set_attr(newrect,"x",dat_path$min_x)
+                 xml2::xml_set_attr(newrect,"y",location_y-(dat_path$max_y-dat_path$min_y)/2.0)
+                 xml2::xml_set_attr(newrect,"width",dat_path$max_x-dat_path$min_x)
+                 xml2::xml_set_attr(newrect,"height",dat_path$max_y-dat_path$min_y)
+               }
+             }
+           }
+           
+         },
+         
+         horizontal = {
+           
+           for (pp in 1:length(paths_inGroup)) {
+             dat_path <- dat_paths[pp,,drop=FALSE]
+             path_toChange <- paths_inGroup[pp]
+             value <- value_set[dat_path$order_y]
+             if (is.na(value))
+             {
+               xml2::xml_set_attr(path_toChange,"display","none")
+             } else {
+               location_x <- (frame_info$min_x + (value - frame_info$scale_min) * frame_info$scaling_x)
+               xml2::xml_set_attr(path_toChange,"display",NULL)
+               setNewPathBegin(path_toChange,location_x+dat_path$offset_x,dat_path$start_y)
+             }
+           }
+           
+         })
   
 }
 
@@ -995,8 +1563,8 @@ linesSymbols_info_polygons <- function (polygons_inGroup) {
   dat_polygons$height <- (dat_polygons$max_y - dat_polygons$min_y)
   
   # order of polygons
-  dat_polygons$order_x <- order(dat_polygons$min_x)
-  dat_polygons$order_y <- order(dat_polygons$min_y)
+  dat_polygons$order_x <- order(order(dat_polygons$min_x))
+  dat_polygons$order_y <- order(order(dat_polygons$min_y))
   
   # return
   return(dat_polygons)
@@ -1169,8 +1737,8 @@ linesSymbols_info_linegroups <- function (linegroups_inGroup) {
   dat_linegroups$height <- (dat_linegroups$max_y - dat_linegroups$min_y)
   
   # order of polygons
-  dat_linegroups$order_x <- order(dat_linegroups$min_x)
-  dat_linegroups$order_y <- order(dat_linegroups$min_y)
+  dat_linegroups$order_x <- order(order(dat_linegroups$min_x))
+  dat_linegroups$order_y <- order(order(dat_linegroups$min_y))
   
   # return
   return(dat_linegroups)
@@ -1375,8 +1943,8 @@ linesSymbols_edit_circles <- function (svg, group, frame_info, value_set, alignm
   # order of circles
   if (!scatter)
   {
-    symbols_order_x <- order(as.numeric(xml2::xml_attr(symbols_inGroup, "cx")))
-    symbols_order_y <- order(as.numeric(xml2::xml_attr(symbols_inGroup, "cy")))
+    symbols_order_x <- order(order(as.numeric(xml2::xml_attr(symbols_inGroup, "cx"))))
+    symbols_order_y <- order(order(as.numeric(xml2::xml_attr(symbols_inGroup, "cy"))))
   }
   if (scatter)
   {
@@ -1469,8 +2037,8 @@ linesSymbols_edit_rects <- function (svg, group, frame_info, value_set, alignmen
   # order of rects
   if (!scatter)
   {
-    symbols_order_x <- order(as.numeric(xml2::xml_attr(symbols_inGroup, "x")))
-    symbols_order_y <- order(as.numeric(xml2::xml_attr(symbols_inGroup, "y")))
+    symbols_order_x <- order(order(as.numeric(xml2::xml_attr(symbols_inGroup, "x"))))
+    symbols_order_y <- order(order(as.numeric(xml2::xml_attr(symbols_inGroup, "y"))))
   }
   if (scatter)
   {
@@ -1532,7 +2100,7 @@ linesSymbols_edit_rects <- function (svg, group, frame_info, value_set, alignmen
 #' @param values Numeric vector. If a dataframe or matrix is provided, only the first row will be used.
 #' @param alignment Character value. Accepts 'horizontal' or 'vertical' (default). See details.
 #' @param has_lines Are there lines? (default TRUE)
-#' @param symbol_type Character value. Accepts 'circle', 'rect', 'polygon' or 'linegroup'; see details. (default NULL = no symbols)
+#' @param symbol_type Character value. Accepts 'circle', 'rect', 'polygon', 'linegroup', 'path', or 'guess' for guessing of type; see details. (default NULL = no symbols)
 #' @param ... Further arguments used internally by \code{\link{scatterSymbols}}.
 #' @return XML document with SVG content
 #' @details Note: 'Horizontal' alignment refers to adjustment of the x-coordinates of elements, 'vertical' alignment to adjustment of the y-coordinates. This is not to be confused with the orientation of the resulting polyline (and/or the sequence of symbols) that goes from left to right (with \code{alignment='vertical'}) or from top to bottom (with \code{alignment='horizontal'}).\cr
@@ -1544,6 +2112,7 @@ linesSymbols_edit_rects <- function (svg, group, frame_info, value_set, alignmen
 #' \item rect: XML elements of type 'rect'. Attributes 'x' or 'y' are adjusted.
 #' \item polygon: XML elements of type 'polygon'. Attribute 'points' is adjusted so that the centroid of the shape matches the scaled value position on the chart.
 #' \item linegroup: XML elements of type 'g' that contain elements of type 'line'. Attributes 'x1' and 'x2' or 'y1' and 'y2' of those lines are adjusted so that the mean x- or y-coordinate of all lines in the group matches the scaled value position on the chart.
+#' \item path: XML elements of type 'path'. The first command of attribute 'd' is adjusted. The center of path is defined as the midpoint between minimum and maximum x- and y-coordinates of the shape.
 #' }
 #' @examples
 #' #read SVG file
@@ -1576,7 +2145,7 @@ linesSymbols <- function (svg, frame_name, group_name, scale_real, values, align
   
   # input check
   if (!is.null(symbol_type)) {
-    if (!symbol_type %in% c("circle","rect","polygon","linegroup")) { stop("Error: Invalid symbol_type. Must be one of 'circle', 'rect', 'polygon', or 'linegroup'.") }
+    if (!symbol_type %in% c("circle","rect","polygon","linegroup","path","guess")) { stop("Error: Invalid symbol_type. Must be one of 'circle', 'rect', 'polygon', 'linegroup', 'path', or 'guess'.") }
   }
   if (!alignment %in% c("horizontal","vertical")) { stop("Error: Alignment has to be either 'horizontal' or 'vertical'.") }
   # if input-values == data.frame: transform first row to vector
@@ -1590,6 +2159,13 @@ linesSymbols <- function (svg, frame_name, group_name, scale_real, values, align
   # get frame info, scaling and group
   frame_info <- frame_and_scaling(svg, frame_name, scale_real)
   group <- linesSymbols_in(svg, group_name)
+  
+  # guess symbol type
+  if (!is.null(symbol_type) && symbol_type == "guess")
+  {
+    symbol_type <- linesSymbols_guess(group)
+    if (!is.null(symbol_type) && is.na(symbol_type)) stop("Error: Could not guess symbol_type from group content.")
+  }
   
   # 1 - Lines
   if (has_lines)
@@ -1616,6 +2192,7 @@ linesSymbols <- function (svg, frame_name, group_name, scale_real, values, align
     if (symbol_type == "rect")      linesSymbols_edit_rects     (svg, group, frame_info, values, alignment, scatter = scatter)
     if (symbol_type == "polygon")   linesSymbols_edit_polygons  (svg, group, frame_info, values, alignment, scatter = scatter)
     if (symbol_type == "linegroup") linesSymbols_edit_linegroups(svg, group, frame_info, values, alignment, scatter = scatter)
+    if (symbol_type == "path")      linesSymbols_edit_paths     (svg, group, frame_info, values, alignment, scatter = scatter)
   }
   
   return(svg)
@@ -1632,7 +2209,7 @@ linesSymbols <- function (svg, frame_name, group_name, scale_real, values, align
 #' @param scale_real_x Numeric vector (e.g. \code{c(0,100)}) of arbitrary length for x-axis. Only minimum and maximum are used for scaling of values.
 #' @param scale_real_y Numeric vector (e.g. \code{c(0,100)}) of arbitrary length for y-axis. Only minimum and maximum are used for scaling of values.
 #' @param values Dataframe or matrix with numeric vectors. First column corresponds to x-axis. Second column corresponds to y-axis.
-#' @param symbol_type Character value. Accepts 'circle', 'rect', 'polygon' or 'linegroup'; see details.
+#' @param symbol_type Character value. Accepts 'circle', 'rect', 'polygon', 'linegroup', 'path', or 'guess' for guessing of type; see details.
 #' @return XML document with SVG content
 #' @details Symbols may be prepared in the SVG file in any amount. But be aware that the function will simply duplicate the first one (in the group) or remove the last ones to match the amount of data values. When, for example, you need to have different colors for different subgroups of cases, prepare several groups of symbols and call this function for each of them.\cr
 #' The function currently supports the following \code{symbol_type}s:
@@ -1641,6 +2218,7 @@ linesSymbols <- function (svg, frame_name, group_name, scale_real, values, align
 #' \item rect: XML elements of type 'rect'. Attributes 'x' and 'y' are adjusted.
 #' \item polygon: XML elements of type 'polygon'. Attribute 'points' is adjusted so that the centroid of the shape matches the scaled value positions on the chart.
 #' \item linegroup: XML elements of type 'g' that contain elements of type 'line'. Attributes 'x1', 'x2', 'y1' and 'y2' of those lines are adjusted so that the mean x- and y-coordinate of all lines in the group matches the scaled value positions on the chart.
+#' \item path: XML elements of type 'path'. The first command of attribute 'd' is adjusted. The center of path is defined as the midpoint between minimum and maximum x- and y-coordinates of the shape.
 #' }
 #' @examples
 #' #read SVG file
@@ -1669,9 +2247,6 @@ linesSymbols <- function (svg, frame_name, group_name, scale_real, values, align
 #' @export
 scatterSymbols <- function(svg, frame_name, group_name, scale_real_x, scale_real_y, values, symbol_type) {
   # input check
-  if (!is.null(symbol_type)) {
-    if (!symbol_type %in% c("circle","rect","polygon","linegroup")) { stop("Error: Invalid symbol_type. Must be one of 'circle', 'rect', 'polygon', or 'linegroup'.") }
-  }
   if (length(dim(values))!=2) stop("Error: Wrong object for argument values. Expecting 2-dimensional object (dataframe, matrix) with two columns.")
   if (!is.numeric(values[,1]) || !is.numeric(values[,2])) { stop("Error: Non-numerical values.") }
   # Anpassung mittels linesSymbols
@@ -1755,3 +2330,33 @@ svg_setElementText <- function(svg, element_name, text_new, alignment = NULL, in
 changeText <- function(svg, element_name, text, alignment = NULL, in_group = NULL, hide_blank = FALSE) {
   return(svg_setElementText(svg = svg,element_name = element_name,text_new = text,alignment = alignment,inGroup = in_group, hide_blank = hide_blank))
 }
+
+### FORMATIERUNGSFUNKTIONEN ----
+
+# TODO
+#' #' Do some formatting on SVG
+#' #' @description With + one can apply formatting functions on SVG charts.
+#' #' @param svg XML document with SVG content
+#' #' @param format_function A formatting function (see details)
+#' #' @return XML document with SVG content
+#' #' @details BLABLABLA
+#' #' @examples
+#' #' @export
+#' `+.svg_obj` <- function(svg,format_function) {
+#'   if (!"svg_format_function" %in% names(format_function)) stop("Error: Right-hand argument of + operator is no function of type 'svg_format_function'!")
+#'   args <- format_function
+#'   args$svg_format_function <- NULL
+#'   args$svg <- svg
+#'   do.call(what = format_function$svg_format_function,args = args)
+#' }
+#' 
+#' centerTextHorizontal_ <- function(svg,group_name) {
+#'   print(paste0("Zentriere fuer ",group_name))
+#'   #TODO: eigentlicher Programmcode
+#'   return(svg)
+#' }
+#' 
+#' #' @export
+#' centerTextHorizontal <- function(group_name) {
+#'   return(list(svg_format_function="centerTextHorizontal_",group_name=group_name))
+#' }
