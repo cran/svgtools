@@ -1,11 +1,11 @@
 Package: svgtools
 Type: Package
 Title: Manipulate SVG (Template) Files of Charts
-Version: 1.1.0
-Date: 2021-12-14
+Version: 1.1.2
+Date: 2024-06-05
 Authors@R: 
-  c(person("Konrad","Oberwimmer",email="konrad.oberwimmer@iqs.gv.at",role=c("aut", "cre")),
-    person("Christian","Wimmer",role="aut"),
+  c(person("Christian","Wimmer",email="christian.wimmer@iqs.gv.at",role=c("cre", "aut")),
+    person("Konrad","Oberwimmer",role=c("aut")),
     person("Michael","Bruneforth",role="ctb"))
 Description: The purpose of this package is to manipulate SVG files that are templates of charts the user wants to produce. 
     In vector graphics one copes with x-/y-coordinates of elements (e.g. lines, rectangles, text). Their scale is often dependent on the program that is used to produce the graphics. 
@@ -14,17 +14,18 @@ Description: The purpose of this package is to manipulate SVG files that are tem
     This is done by stackedBar() for bar charts, by linesSymbols() for charts with lines and/or symbols (dot markers) and scatterSymbols() for scatterplots.
 Encoding: UTF-8
 License: GPL-3
-RoxygenNote: 7.1.2
+RoxygenNote: 7.3.1
 Depends: R (>= 4.0.0)
 Imports: xml2 (>= 1.3.0), stringr (>= 1.4.0), rsvg (>= 2.1), magick (>=
         2.4.0)
-Suggests: knitr, rmarkdown, bezier
+Suggests: knitr, rmarkdown, bezier, testthat (>= 3.0.0)
 VignetteBuilder: knitr, rmarkdown
+Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2021-12-14 06:33:42 UTC; k.oberwimmer
-Author: Konrad Oberwimmer [aut, cre],
-  Christian Wimmer [aut],
+Packaged: 2024-06-06 11:41:42 UTC; c.wimmer
+Author: Christian Wimmer [cre, aut],
+  Konrad Oberwimmer [aut],
   Michael Bruneforth [ctb]
-Maintainer: Konrad Oberwimmer <konrad.oberwimmer@iqs.gv.at>
+Maintainer: Christian Wimmer <christian.wimmer@iqs.gv.at>
 Repository: CRAN
-Date/Publication: 2021-12-14 14:30:02 UTC
+Date/Publication: 2024-06-06 13:00:02 UTC

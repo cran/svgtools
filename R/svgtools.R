@@ -580,7 +580,12 @@ stackedBar_edit_text <- function(barLabels, order_labels, value_set, rects, orde
     text_toChange <- barLabels[order_labels[rr]]
     
     # change value
-    xml2::xml_text(text_toChange) <- format(round(value_set[rr],decimals),nsmall=decimals,decimal.mark=",",big.mark="",small.mark="")
+    if (!getOption("svgtools.roundAwayFromZero", default = FALSE)) {
+      rounded_value <- base::round(value_set[rr],decimals)
+    } else {
+      rounded_value <- roundAwayFromZero(value_set[rr],decimals)
+    }
+    xml2::xml_text(text_toChange) <- format(rounded_value,nsmall=decimals,decimal.mark=",",big.mark="",small.mark="")
     
     # comply with displayLimits and completely ignore NA
     xml2::xml_set_attr(text_toChange, "display", NULL)
@@ -642,7 +647,7 @@ stackedBar_edit_text <- function(barLabels, order_labels, value_set, rects, orde
 #' @param alignment Character value. Accepts 'horizontal' (default) or 'vertical'. See details.
 #' @param has_labels Are there value labels (of XML type 'text') to adjust? (default TRUE)
 #' @param label_position Character value. Accepts 'start', 'center' (default) and 'end'. This refers to the underlying bar segments.
-#' @param decimals Integer value defining the number of decimal digits of value labels (default 0).
+#' @param decimals Integer value defining the number of decimal digits of value labels (default 0). It is possible to set the rounding of the labels to rounding away from zero by \code{options("svgtools.roundAwayFromZero" = TRUE)}.
 #' @param display_limits Interval for (small) values, that lead to suppression of the corresponding value labels. If only one value x is given, it is turned into the interval c(-x,x). (default 0 = no suppression) 
 #' @param ... Further arguments used internally by \code{\link{referenceBar}}, \code{\link{diffBar}} and \code{\link{percentileBar}}.
 #' @return XML document with SVG content
@@ -767,7 +772,7 @@ stackedBar <- function(svg, frame_name, group_name, scale_real, values, alignmen
 #' @param alignment Character value. Accepts 'horizontal' (default) or 'vertical'. See details.
 #' @param has_labels Are there value labels (of XML type 'text') to adjust? (default TRUE)
 #' @param label_position Character value. Accepts 'start', 'center' (default) and 'end'. This refers to the underlying bar segments.
-#' @param decimals Integer value defining the number of decimal digits of value labels (default 0).
+#' @param decimals Integer value defining the number of decimal digits of value labels (default 0). It is possible to set the rounding of the labels to rounding away from zero by \code{options("svgtools.roundAwayFromZero" = TRUE)}.
 #' @param display_limits Interval for (small) values, that lead to suppression of the corresponding value labels. If only one value x is given, it is turned into the interval c(-x,x). (default 0 = no suppression) 
 #' @return XML document with SVG content
 #' @details See \code{\link{stackedBar}}.
@@ -821,7 +826,7 @@ referenceBar <- function(svg, frame_name, group_name, scale_real, values, refere
 #' @param alignment Character value. Accepts 'horizontal' (default) or 'vertical'. See details.
 #' @param has_labels Are there value labels (of XML type 'text') to adjust? (default TRUE)
 #' @param label_position Character value. Accepts 'start', 'center' (default) and 'end'. This refers to the underlying bar segments.
-#' @param decimals Integer value defining the number of decimal digits of value labels (default 0).
+#' @param decimals Integer value defining the number of decimal digits of value labels (default 0). It is possible to set the rounding of the labels to rounding away from zero by \code{options("svgtools.roundAwayFromZero" = TRUE)}.
 #' @param display_limits Interval for (small) values, that lead to suppression of the corresponding value labels. If only one value x is given, it is turned into the interval c(-x,x). (default 0 = no suppression) 
 #' @return XML document with SVG content
 #' @details See \code{\link{stackedBar}}.
@@ -1029,8 +1034,8 @@ linesSymbols_order_lines <- function (lines_inGroup, alignment) {
     lines_y2_values <- c(lines_y2_values, as.numeric(xml2::xml_attr(lines_inGroup[n_lines], "y2")))
   }
   
-  order_lines_x <- order(order(lines_x1_values))
-  order_lines_y <- order(order(lines_y1_values))
+  order_lines_x <- order(lines_x1_values)
+  order_lines_y <- order(lines_y1_values)
   
   if (alignment == "vertical") {order_lines <- order_lines_x}
   if (alignment == "horizontal") {order_lines <- order_lines_y}
@@ -1943,8 +1948,8 @@ linesSymbols_edit_circles <- function (svg, group, frame_info, value_set, alignm
   # order of circles
   if (!scatter)
   {
-    symbols_order_x <- order(order(as.numeric(xml2::xml_attr(symbols_inGroup, "cx"))))
-    symbols_order_y <- order(order(as.numeric(xml2::xml_attr(symbols_inGroup, "cy"))))
+    symbols_order_x <- order(as.numeric(xml2::xml_attr(symbols_inGroup, "cx")))
+    symbols_order_y <- order(as.numeric(xml2::xml_attr(symbols_inGroup, "cy")))
   }
   if (scatter)
   {
@@ -2037,8 +2042,8 @@ linesSymbols_edit_rects <- function (svg, group, frame_info, value_set, alignmen
   # order of rects
   if (!scatter)
   {
-    symbols_order_x <- order(order(as.numeric(xml2::xml_attr(symbols_inGroup, "x"))))
-    symbols_order_y <- order(order(as.numeric(xml2::xml_attr(symbols_inGroup, "y"))))
+    symbols_order_x <- order(as.numeric(xml2::xml_attr(symbols_inGroup, "x")))
+    symbols_order_y <- order(as.numeric(xml2::xml_attr(symbols_inGroup, "y")))
   }
   if (scatter)
   {
@@ -2268,41 +2273,30 @@ svg_setElementText <- function(svg, element_name, text_new, alignment = NULL, in
   
   for (element_nr in 1:length(element_name)) {
     
-    check1 <- length(which(xml2::xml_text(elements) == element_name[element_nr])) == 0
-    check2 <- length(which(xml2::xml_attr(elements, "id") == element_name[element_nr])) == 0
+    checkElementWithId <- (length(which(xml2::xml_attr(elements, "id") == element_name[element_nr])) > 0)
+    checkElementWithText <- (length(which(xml2::xml_text(elements) == element_name[element_nr])) > 0)
     
-    
-    if (check1 & check2) {stop(paste0("Error: No text element with id or text '", element_name[element_nr], "' was found."))}
-    
-    if (length(which(xml2::xml_text(elements) == element_name[element_nr])) == 0) {
-      # edit text
-      xml2::xml_set_text(elements[which(xml2::xml_attr(elements, "id") == 
-                                                element_name[element_nr])], text_new[element_nr])
-      # edit alignment
-      if (!is.null(alignment)) {
-        xml2::xml_set_attr(elements[which(xml2::xml_attr(elements, "id") == 
-                                                  element_name[element_nr])], "text-anchor", alignment)
-      }
-      # hide if blank
-      if (nchar(text_new)==0 && hide_blank) xml2::xml_set_attr(elements[which(xml2::xml_attr(elements, "id") == element_name[element_nr])], "display", "none")
-      if (nchar(text_new)>0 || !hide_blank) xml2::xml_set_attr(elements[which(xml2::xml_attr(elements, "id") == element_name[element_nr])], "display", NULL)
-      
-    } else {
-      # edit text
-      xml2::xml_set_text(elements[which(xml2::xml_text(elements) == 
-                                                element_name[element_nr])], text_new[element_nr])
-      
-      # edit alignment
-      if (!is.null(alignment)) {
-        xml2::xml_set_attr(elements[which(xml2::xml_text(elements) == 
-                                                  element_name[element_nr])], "text-anchor", alignment)
-      }
-      
-      # hide if blank
-      if (nchar(text_new)==0 && hide_blank) xml2::xml_set_attr(elements[which(xml2::xml_text(elements) == element_name[element_nr])], "display", "none")
-      if (nchar(text_new)>0 || !hide_blank) xml2::xml_set_attr(elements[which(xml2::xml_text(elements) == element_name[element_nr])], "display", NULL)
+    if (!checkElementWithId && !checkElementWithText) {
+      stop(paste0("Error: No text element with id or text '", element_name[element_nr], "' was found."))
     }
     
+    if (checkElementWithId) {
+      text_element <- elements[which(xml2::xml_attr(elements, "id") == element_name[element_nr])]
+    } else {
+      text_element <- elements[which(xml2::xml_text(elements) == element_name[element_nr])]
+    }
+    
+    # edit text
+    xml2::xml_set_text(text_element, text_new[element_nr])
+    
+    # edit alignment
+    if (!is.null(alignment)) {
+      xml2::xml_set_attr(text_element, "text-anchor", alignment)
+    }
+    
+    # hide if blank
+    if (nchar(text_new) == 0 && hide_blank) xml2::xml_set_attr(text_element, "display", "none")
+    if (nchar(text_new) > 0 || !hide_blank) xml2::xml_set_attr(text_element, "display", NULL)
   }
   
   return(svg)

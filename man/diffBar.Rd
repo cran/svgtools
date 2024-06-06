@@ -39,7 +39,7 @@ If a matrix or dataframe is given, rows define the value set for several (stacke
 
 \item{label_position}{Character value. Accepts 'start', 'center' (default) and 'end'. This refers to the underlying bar segments.}
 
-\item{decimals}{Integer value defining the number of decimal digits of value labels (default 0).}
+\item{decimals}{Integer value defining the number of decimal digits of value labels (default 0). It is possible to set the rounding of the labels to rounding away from zero by \code{options("svgtools.roundAwayFromZero" = TRUE)}.}
 
 \item{display_limits}{Interval for (small) values, that lead to suppression of the corresponding value labels. If only one value x is given, it is turned into the interval c(-x,x). (default 0 = no suppression)}
 }

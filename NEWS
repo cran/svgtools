@@ -1,4 +1,24 @@
 =====================================
+svgtools v1.1.2 (release: 2024-06-05)
+=====================================
+
+* Changed maintainer
+
+Features:
+  * added option for rounding away from zero for labels of barcharts:
+    options("svgtools.roundAwayFromZero" = TRUE)
+
+Fixes:
+  * fixed code from v.1.1.0 for correct ordering of symbols and lines (both alignments)
+
+=====================================
+svgtools v1.1.1 (release: 2022-05-20)
+=====================================
+
+Fixes:
+  * fixed changeText(...) to set alignment even when text of element that was identified by text changes
+  
+=====================================
 svgtools v1.1.0 (release: 2021-12-14)
 =====================================
 

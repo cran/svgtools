@@ -1,6 +1,5 @@
 ---
 title: "svgtools: Manipulate SVG template files of charts."
-author: "Konrad Oberwimmer <konrad.oberwimmer@iqs.gv.at>"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{svgtools: Manipulate SVG template files of charts.}
@@ -187,7 +186,7 @@ The program code above will ultimately display the following chart and also save
 
 ![Fig. 4: Adjusted bar chart example](fig3_values.jpg)
 
-The first function call to `stackedBar` in the example above has set every argument there is for this function. `has_labels=TRUE` and `decimals=0` are actually default values, which is why things work the same in the second function call. While the meaning of `has_labels=TRUE` is obvious, note how values are rounded to the number of decimal digits desired, so that '105.71' becomes '106' in the chart.
+The first function call to `stackedBar` in the example above has set every argument there is for this function. `has_labels=TRUE` and `decimals=0` are actually default values, which is why things work the same in the second function call. While the meaning of `has_labels=TRUE` is obvious, note how values are rounded to the number of decimal digits desired, so that '105.71' becomes '106' in the chart. It is possible to set the rounding of the labels to rounding away from zero by `options("svgtools.roundAwayFromZero" = TRUE)` such that ‘106.5’ becomes ‘107’ (default: ‘106’).
 
 `label_position="end"` puts value labels to the top of the bar segments in vertical aligment and to the right side (or left side for negative values) in horizontal alignment. The default setting used in the second function call puts value labels in the center of the bar segments. Argument `display_limits` is used to suppress value labes in a range around zero. If only one number is provided it refers to the absolute value. In the example the value '8' of the category A in group 1 is not shown any more because it is lower than 10. Note that this is evaluated for the exact value, not the rounded one. So '10.1' would be visible (as '10' with `decimals=0`) while '9.9' would not.
 
@@ -284,7 +283,7 @@ Adjusting a chart with lines and/or symbols by the means of `linesSymbols` follo
 
 So, for every group A to E in the example, there exists a named group element in the XML structure. The elements contained in that group differ rather strongly in regard of their type and amount. The example was chosen to show different symbol types that `svgtools` can handle as well as several possibilities to compile a template.
 
-Group A: In the example, group A shows a line with rectangles as "dot marks" for 10 timepoints. Therefore, the group element with name 'gA' consists of 9 XML elements of type 'line' (which is, of course, one less than the number of values) and 10 XML elements of type 'rect'. Note that in the process of adjusting, only one coordinate (here: y-coordinate) will be changed, so the positioning on the other coordinate (here: x-coordinate) in the template matters. Because it is rather tedious to provide 9 lines and 10 rectangles with exact intervals on the x-axis beforehand, the examples for group B to E show alternative ways to achieve this.
+Group A: In the example, group A shows a line with rectangles as "dot marks" for 10 timepoints. Therefore, the group element with name 'gA' consists of 9 XML elements of type 'line' (which is, of course, one less than the number of values) and 10 XML elements of type 'rect'. Note that in the process of adjusting, only one coordinate (here: y-coordinate) will be changed, so the positioning on the other coordinate (here: x-coordinate) in the template matters. If the visible symbol order differs from the order of the corresponding XML elements in the template file, XML elements are still adjusted according to the visible symbol order. Because it is rather tedious to provide 9 lines and 10 rectangles with exact intervals on the x-axis beforehand, the examples for group B to E show alternative ways to achieve this.
 ```
 <g id="gA">
 	<rect x="153.07" y="96.378" fill="#706F6F" width="5.67" height="5.669"/>
