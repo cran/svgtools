@@ -155,8 +155,8 @@ summary_svg <- function(svg) {
 #' display_svg(svg = svg, width = 500)
 #' @export
 display_svg <- function(svg, width = NULL, height = NULL) {
-  rsvg <- rsvg::rsvg(charToRaw(toString(svg)),width = width,height = height) #wandelt das XML-Objekt zunaechst in einen String und dann in Bytes um; wird von von rsvg zu bitmap gerendert
-  print(magick::image_read(rsvg))
+  as_rsvg <- rsvg::rsvg(charToRaw(toString(svg)), width = width, height = height) #xml to string to bytes to bitmap (rsvg)
+  print(magick::image_read(as_rsvg))
 }
 
 #' Writes SVG to file
@@ -211,7 +211,6 @@ write_svg <- function(svg, file, remove_hidden = TRUE, flatten = FALSE) {
   
   # write svg
   xml2::write_xml(x = save_svg, file = file)
-  #cat("svg gespeichert als: ", file, "\n")
   rm(save_svg)
 }
 
@@ -287,101 +286,201 @@ getMinMaxArc <- function(arcparams)
   return(NULL)
 }
 
-# Liest Infos des genannten Rahmens aus und berechnet Skalierung
-# TODO: Check, ob sinnvolle Skala eingegeben wurde (?)
+
+# frame_and_scaling: get information about actual frame
+# 
+# @param svg_in svg template
+# @param frame_name name of frame rect-node
+# @param scale_minToMax displayed scale (min to max or min and max)
 frame_and_scaling <- function(svg_in, frame_name, scale_minToMax) {
   
+  # Check scale_minToMax
+  scale_first <- base::min(scale_minToMax)
+  scale_last <- base::max(scale_minToMax)
+  
+  if (!base::is.numeric(scale_first) | !base::is.numeric(scale_last) |
+      (scale_last < scale_first) | (scale_last == scale_first) | (base::any(base::grepl("\"", scale_minToMax) == TRUE))) {
+    stop("Error: Element of scale_minToMax not numeric or min == max or max > min")
+  }
+  
   # frame information
-  frame_current <- data.frame("name" = frame_name,
+  frame_current <- base::data.frame("name" = frame_name,
                                     "min_x" = NA,
                                     "max_x" = NA,
                                     "min_y" = NA,
                                     "max_y" = NA,
                                     "diff_x" = NA,
                                     "diff_y" = NA,
-                                    "scale_min" = min(scale_minToMax),
-                                    "scale_max" = max(scale_minToMax),
+                                    "scale_min" = base::min(scale_minToMax),
+                                    "scale_max" = base::max(scale_minToMax),
                                     "scale_diff" = NA,
                                     "scaling_x" = NA,
                                     "scaling_y" = NA)
   
-  frame_index <- which(xml2::xml_attr(xml2::xml_find_all(svg_in, "/svg/rect"), "id") == frame_name)
-  fr <- xml2::xml_find_all(svg_in, "/svg/rect")[frame_index]
+  # search frame
+  search_frame_xpath <- base::paste0("//rect[@id='", frame_name, "']")
+  fr <- xml2::xml_find_all(x = svg_in, xpath = search_frame_xpath)
   
   # Check if frame is available and unique
   if (length(fr) != 1) {
-    
-    rects <- xml2::xml_find_all(svg_in, "/svg/rect")
-    frames_av <- character()
-    
-    for (rect in rects)
-    {
-      if (xml2::xml_has_attr(rect, "id"))
-      {
-        frames_av <- c(frames_av, xml2::xml_attr(rect, "id"))
-      }
-    }
-    stop(paste0("Error: Frame not found or more than one frames with the same name. Available frames:", paste(frames_av, collapse=", ")))
-    
+    stop("Error: Frame not found or more than one frame with the same name.")
   }
   
   # calculate scaling
-  frame_current$min_x <- as.numeric(xml2::xml_attr(fr, "x"))
-  frame_current$max_x <- frame_current$min_x + as.numeric(xml2::xml_attr(fr, "width"))
-  frame_current$min_y <- as.numeric(xml2::xml_attr(fr, "y"))
-  frame_current$max_y <- frame_current$min_y + as.numeric(xml2::xml_attr(fr, "height"))
+  frame_current$min_x <- base::ifelse (xml2::xml_has_attr(x = fr, attr = "x"), base::as.numeric(xml2::xml_attr(fr, "x")), 0) # new: if x is not available set to 0
+  if (xml2::xml_has_attr(x = fr, attr = "x") == FALSE) {
+    warning("No x attribute in frame-node. It is assumed that x is 0 and x is set to 0.")
+  }
+  frame_current$max_x <- frame_current$min_x + base::as.numeric(xml2::xml_attr(fr, "width"))
+  frame_current$min_y <- base::ifelse (xml2::xml_has_attr(x = fr, attr = "y"), base::as.numeric(xml2::xml_attr(fr, "y")), 0) # new: if y is not available set to 0
+  if (xml2::xml_has_attr(x = fr, attr = "y") == FALSE) {
+    warning("No y attribute in frame-node. It is assumend that y is 0 and y is set to 0.")
+  }
+  frame_current$max_y <- frame_current$min_y + base::as.numeric(xml2::xml_attr(fr, "height"))
   frame_current$diff_x <- frame_current$max_x - frame_current$min_x
   frame_current$diff_y <- frame_current$max_y - frame_current$min_y
   frame_current$scale_diff <- frame_current$scale_max - frame_current$scale_min
-  frame_current$scaling_x <- abs(frame_current$diff_x / frame_current$scale_diff)
-  frame_current$scaling_y <- abs(frame_current$diff_y / frame_current$scale_diff)
+  frame_current$scaling_x <- base::abs(frame_current$diff_x / frame_current$scale_diff)
+  frame_current$scaling_y <- base::abs(frame_current$diff_y / frame_current$scale_diff)
   
   # return
   return(frame_current)
   
 }
 
+
+# svg_getTextNodeType: get type of text node (matrix, tspan, xy)
+svg_getTextNodeType <- function(text_node) {
+  
+  # input check
+  if (xml2::xml_name(text_node) != "text") {
+    stop("svg_getTextNodeType: wrong input type. Text required.")
+  }
+  
+  # cond variables
+  cond_xy <- cond_tspan_node <- cond_tspan_name <- cond_tspan_translate <- cond_tspan_zero <- cond_tspan_notZero <- cond_matrix <- FALSE
+  
+  # x and y coordinates
+  cond_xy <- xml2::xml_has_attr(x = text_node, attr = "x") & xml2::xml_has_attr(x = text_node, attr = "y")
+  # tspan with 0 tspan and transform=translate
+  cond_tspan_node <- base::length(xml2::xml_children(text_node)) == 1
+  if (cond_tspan_node) {
+    cond_tspan_name <- xml2::xml_name(xml2::xml_children(text_node)) == "tspan"
+    cond_tspan_translate <- base::substr(xml2::xml_attr(text_node, "transform"), 1, 9) == "translate"
+    cond_tspan_zero <- base::all(base::unlist(xml2::xml_attrs(xml2::xml_children(text_node))) == "0")
+    # tspan with !0 tspan
+    cond_tspan_notZero <- base::any(base::unlist(xml2::xml_attrs(xml2::xml_children(text_node))) != "0")
+  }
+  # no tspan and transform=matrix
+  cond_matrix <- xml2::xml_has_attr(x = text_node, attr = "transform") & base::substr(xml2::xml_attr(text_node, "transform"), 1, 6) == "matrix"
+  # return
+  if (cond_xy) {
+    out <- "xy"
+  }
+  if (cond_tspan_node & cond_tspan_name & cond_tspan_translate & cond_tspan_zero) {
+    out <- "tspan_zero"
+  }
+  if (cond_tspan_node & cond_tspan_name & cond_tspan_translate & cond_tspan_notZero) {
+    out <- "tspan_notZero"
+  }
+  if(cond_matrix & !cond_tspan_node & !cond_tspan_name) {
+    out <- "matrix"
+  }
+  return(out)
+  
+}
+
+
 # get x-y-coordinates of text element (independent of attributes used)
 get_text_coords <- function(text) {
+  
+  node_type <- svg_getTextNodeType(text_node = text)
   xyattr <- FALSE
-  x <- y <- numeric()
-  if (xml2::xml_has_attr(text,"x"))
-  {
-    xyattr <- TRUE
-    x <- as.numeric(xml2::xml_attr(text,"x"))
-    y <- as.numeric(xml2::xml_attr(text,"y"))
-  } else {
-    transformattr <- xml2::xml_attr(text, "transform")
-    matrix_values_start <- stringr::str_locate(transformattr, "matrix\\(")
-    matrix_values <- stringr::str_sub(transformattr, (matrix_values_start[2] + 1), (nchar(transformattr) - 1))
-    matrix_values <- as.numeric(unlist(strsplit(matrix_values, split = " ")))
-    x <- matrix_values[5]
-    y <- matrix_values[6]
-  }
+  
+  switch(EXPR = node_type,
+         "matrix" = {
+           transformattr <- xml2::xml_attr(x = text, attr = "transform")
+           matrix_values_start <- stringr::str_locate(transformattr, "matrix\\(")
+           matrix_values <- stringr::str_sub(transformattr, (matrix_values_start[2] + 1), (nchar(transformattr) - 1))
+           matrix_values <- as.numeric(unlist(strsplit(matrix_values, split = " ")))
+           x <- matrix_values[5]
+           y <- matrix_values[6]
+         },
+         "tspan_zero" = {
+           transformattr <- xml2::xml_attr(x = text, attr = "transform")
+           translate_values <- base::as.numeric(base::gsub("translate\\(|\\)", "", base::unlist(base::strsplit(transformattr, split = " "))))
+           x <- translate_values[1]
+           y <- translate_values[2]
+         },
+         "tspan_notZero" = {
+           stop("Error: currently, svgtools does not support text nodes with tspan elements that are not 0.")
+         },
+         "xy" = {
+           xyattr <- TRUE
+           x <- base::as.numeric(xml2::xml_attr(text,"x"))
+           y <- base::as.numeric(xml2::xml_attr(text,"y"))
+         },
+         stop("get_text_coords: No valid node_type EXPR in switch statment."))
+
   return(data.frame(x,y,xyattr))
+  
 }
+
 
 # set x-y-coordinates of text element
-set_text_coords <- function(text,x,y,xyattr=FALSE) {
-  if (xyattr)
-  {
-    xml2::xml_set_attr(text,"x",x)
-    xml2::xml_set_attr(text,"y",y)
+set_text_coords <- function (text, x, y, xyattr = FALSE) {
+  
+  if (xyattr) {
+    
+    xml2::xml_set_attr(text, "x", x)
+    xml2::xml_set_attr(text, "y", y)
+    
   } else {
-    transformattr <- xml2::xml_attr(text, "transform")
-    matrix_values_start <- stringr::str_locate(transformattr, "matrix\\(")
-    matrix_values <- stringr::str_sub(transformattr, (matrix_values_start[2] + 1), (nchar(transformattr) - 1))
-    matrix_values <- as.numeric(unlist(strsplit(matrix_values, split = " ")))
-    matrix_values[5] <- x
-    matrix_values[6] <- y
-    transformattr <- paste0("matrix(",paste(matrix_values,collapse=" "), ")")
-    xml2::xml_set_attr(text,"transform",transformattr)
+
+    node_type <- svg_getTextNodeType(text_node = text)
+    
+    switch(EXPR = node_type,
+           "matrix" = {
+             transformattr <- xml2::xml_attr(x = text, attr = "transform")
+             matrix_values_start <- stringr::str_locate(transformattr, "matrix\\(")
+             matrix_values <- stringr::str_sub(transformattr, (matrix_values_start[2] + 1), (base::nchar(transformattr) - 1))
+             matrix_values <- base::as.numeric(base::unlist(base::strsplit(matrix_values, split = " ")))
+             matrix_values[5] <- x
+             matrix_values[6] <- y
+             transformattr <- paste0("matrix(", base::paste(matrix_values, collapse = " "), ")")
+           },
+           "tspan_zero" = {
+             transformattr <- base::paste0("translate(", x, " ", y, ")")
+           },
+           "tspan_notZero" = {
+             stop("Error: currently, svgtools does not support text nodes with tspan elements that are not 0.")
+           },
+           stop("set_text_coords: No valid node_type EXPR in switch statment."))
+
+    xml2::xml_set_attr(text, "transform", transformattr)
+    
   }
 }
 
-# extract coordinates (points) from polygon into matrix
+
+# get_polygon_coords: get coordinates (points) from polygon into matrix
 get_polygon_coords <- function(polygon) {
   points <- xml2::xml_attr(polygon,"points")
+  if (base::grepl(",", points) == FALSE) {
+    warning ("No ',' in polygon-points. Assuming that that points='x1 x2 x3 x4 x5 x6...' means points='x1,x2 x3,x4 x5,x6...'.")
+    points_split <- base::unlist(base::strsplit(x = points, split = " ", fixed = TRUE))
+    points_new <- points_split[1]
+    for (p in 2:base::length(points_split)) {
+      
+      if (p %% 2 == 1) {
+        points_new <- base::paste(points_new, points_split[p], sep = " ")
+      } else {
+        points_new <- base::paste(points_new, points_split[p], sep = ",")
+      }
+      
+    }
+    points <- points_new
+  }
   points <- strsplit(stringr::str_squish(points)," ",fixed = TRUE)[[1]]
   points <- strsplit(points,",",fixed = TRUE)
   points <- do.call(rbind,points)
@@ -389,12 +488,24 @@ get_polygon_coords <- function(polygon) {
   return(points)
 }
 
+
+
+
+
+
+
 # coerce coordinates from matrix and set them as point attribute
 set_polygon_coords <- function(polygon,coords) {
-  points <- apply(coords,1,paste,collapse=",")
-  points <- paste(points,collapse=" ")
+  if (base::grepl(pattern = ",", x = xml2::xml_attr(x = polygon, attr = "points")) == TRUE) {
+    points <- apply(coords,1,paste,collapse=",")
+    points <- paste(points,collapse=" ")
+  } else {
+    points <- apply(coords,1,paste,collapse=" ")
+    points <- paste(points,collapse=" ")
+  }
   xml2::xml_set_attr(polygon,"points",points)
 }
+
 
 # recalculates transform matrix of rotated rects and returns string
 recalc_transformMatrix <- function(element)
@@ -423,15 +534,14 @@ na.as.false <- function(vect)
 
 ### BALKENDIAGRAMME ----
 
-# liest angefuehrte Gruppe ein, Check ob eindeutig vorhanden ist. gibt stackedBar Group aus
+# stackedBar_in: get group by group id, check for unique, return stackedBar group
 stackedBar_in <- function(svg_in, group_name) {
   
-  # get called group
-  named_groups <- xml2::xml_find_all(svg_in, "/svg/g")
-  index_group <- which(xml2::xml_attr(named_groups, "id") == group_name)
-  if (length(index_group) != 1)
+  named_groups <- xml2::xml_find_all(x = svg_in, xpath = base::paste0("//g[@id='", group_name, "']"))
+  
+  if (base::length(named_groups) != 1)
   {
-    groups <- xml2::xml_find_all(svg_in, "/svg/g")
+    groups <- xml2::xml_find_all(x = svg_in, xpath = "//g")
     groups_av <- character()
     for (group in groups)
     {
@@ -442,7 +552,7 @@ stackedBar_in <- function(svg_in, group_name) {
     }
     stop(paste0("Error: Group not found or more than one groups with the same name. Available groups:", paste(groups_av, collapse=", ")))
   }
-  stackedBarGroup <- named_groups[index_group]
+  stackedBarGroup <- named_groups
   return(stackedBarGroup)
   
 }
@@ -542,7 +652,8 @@ stackedBar_edit_rects <- function(rects, frame_info, value_set, order_rects, ali
   }
 }
 
-# Textelemente eines stackedBar: richtige Reihenfolge herausfinden
+
+# stackedBar_order_text: get order of text nodes of a stackedBar
 stackedBar_order_text <- function(barLabels) {
   
   labels_value_y <- labels_value_x <- numeric()
@@ -551,13 +662,37 @@ stackedBar_order_text <- function(barLabels) {
     
     # get y value of rects (min)
     text_label <- barLabels[lb]
-    text_matrix <- xml2::xml_attr(text_label, "transform")
-    matrix_values_start <- stringr::str_locate(text_matrix, "matrix\\(")
-    matrix_values <- stringr::str_sub(text_matrix, (matrix_values_start[2] + 1), (nchar(text_matrix) - 1))
-    matrix_values <- as.numeric(unlist(strsplit(matrix_values, split = " ")))
-    labels_value_y <- c(labels_value_y, matrix_values[length(matrix_values)])
-    labels_value_x <- c(labels_value_x, matrix_values[length(matrix_values) - 1])
     
+    # get node type
+    node_type <- svg_getTextNodeType(text_label)
+    
+    switch(EXPR = node_type,
+           "matrix"={
+             text_matrix <- xml2::xml_attr(text_label, "transform")
+             matrix_values_start <- stringr::str_locate(text_matrix, "matrix\\(")
+             matrix_values <- stringr::str_sub(text_matrix, (matrix_values_start[2] + 1), (nchar(text_matrix) - 1))
+             matrix_values <- as.numeric(unlist(strsplit(matrix_values, split = " ")))
+             labels_value_y <- c(labels_value_y, matrix_values[length(matrix_values)])
+             labels_value_x <- c(labels_value_x, matrix_values[length(matrix_values) - 1])
+           },
+           "tspan_zero"={
+             text_translate <- xml2::xml_attr(text_label, "transform")
+             text_translate_xy <- base::unlist(base::strsplit(base::gsub("translate\\(|\\)", "", text_translate), split = " "))
+             text_translate_x <- base::as.numeric(text_translate_xy[1])
+             text_translate_y <- base::as.numeric(text_translate_xy[2])
+             labels_value_x <- c(labels_value_x, text_translate_x)
+             labels_value_y <- c(labels_value_y, text_translate_y)
+           },
+           "tspan_notZero"={
+             # TODO
+             stop("Error: currently, svgtools does not support text nodes with tspan attributes that are not 0.")
+           },
+           "xy"={
+             # TODO
+             stop("Error: currently, svgtools does not support text nodes with x and y attributes.")
+           },
+           stop("stackedBar_order_text: No valid node_type EXPR in switch statment."))
+
   }
   
   order_labels_x <- order(labels_value_x)
@@ -566,6 +701,18 @@ stackedBar_order_text <- function(barLabels) {
   return(data.frame(order_labels_x, order_labels_y))
   
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Text eines stackedBars bearbeiten: Text tauschen, Position anpassen
 stackedBar_edit_text <- function(barLabels, order_labels, value_set, rects, order_rects, decimals, displayLimits, labelPosition, alignment) {
@@ -683,6 +830,19 @@ stackedBar <- function(svg, frame_name, group_name, scale_real, values, alignmen
   
   # get called group
   stackedBarGroup <- stackedBar_in(svg, group_name)
+  
+  # Check: Set x- and/or y-attribute of rect-nodes of group to 0 if not available.
+  stackedBarGroup_rects <- xml2::xml_find_all(x = stackedBarGroup, xpath = ".//rect")
+  
+  if (base::any(xml2::xml_has_attr(x = stackedBarGroup_rects, attr = "x") == FALSE)) {
+    xml2::xml_set_attr(x = stackedBarGroup_rects[base::which(xml2::xml_has_attr(x = stackedBarGroup_rects, attr = "x") == FALSE)], attr = "x", value = "0")
+    base::warning("No x-attribute in at least one rect-node of the stackedBar-group. Assuming that x is 0 and x is set to 0 in corresponding rect-node(s)")
+  }
+  
+  if (base::any(xml2::xml_has_attr(x = stackedBarGroup_rects, attr = "y") == FALSE)) {
+    xml2::xml_set_attr(x = stackedBarGroup_rects[base::which(xml2::xml_has_attr(x = stackedBarGroup_rects, attr = "y") == FALSE)], attr = "y", value = "0")
+    base::warning("No y-attribute in at least one rect-node of the stackedBar-group. Assuming that y is 0 and y is set to 0 in corresponding rect-node(s)")
+  }
   
   # get n subgroups
   n_subgroups <- stackedBar_checkSub(stackedBarGroup, values)
@@ -843,19 +1003,70 @@ referenceBar <- function(svg, frame_name, group_name, scale_real, values, refere
 #'                label_position = "end", decimals = 1, display_limits = 0.1)
 #' @export
 diffBar <- function(svg, frame_name, group_name, scale_real, values, nullvalue=0, alignment = "horizontal", has_labels = TRUE, label_position = "center", decimals = 0, display_limits = c(0,0)) {
+  
+  # check nullvalue
   if (nullvalue < min(scale_real) || nullvalue > max(scale_real)) stop("Error: nullvalue has to be in [min(scale_real),max(scale_real)].")
-  if (length(dim(values))==1)
-  {
-    offset <- nullvalue - min(scale_real)
-    if (any(na.as.false(values<nullvalue))) offset <- offset - abs(sum(values[na.as.false(values<nullvalue)]))
-  } else {
-    offset <- rep(nullvalue - min(scale_real),nrow(values))
-    for (rr in 1:nrow(values))
-    {
-      rowvalues <- as.numeric(values[rr,,drop=TRUE])
-      if (any(na.as.false(rowvalues<nullvalue))) offset[rr] <- offset[rr] - abs(sum(rowvalues[na.as.false(rowvalues<nullvalue)]))
-    }
+  
+  # input dat check 1
+  input_dat_check <- values
+  input_dat_check$n_na <- rowSums(x = base::is.na(input_dat_check[ , c(1,2)]))
+  input_dat_check$not_na <- rowSums(x = !base::is.na(input_dat_check[ , c(1,2)]))
+  input_dat_check$check <- base::ifelse((input_dat_check$not_na == 1 | input_dat_check$n_na == 2) & input_dat_check$n_na >= 1, TRUE, FALSE)
+  if (base::any(input_dat_check$check == FALSE)) {
+    stop ("diffBar: At least one value per row must be NA.")
   }
+  base::rm(input_dat_check)
+  
+  # input dat check 2
+  check_df_n <- check_df_p <- TRUE
+  if (base::any(!base::is.na(values[ , 1]))) {
+    check_df_n <- base::all(values[base::which(!base::is.na(values[ , 1])), 1] <= nullvalue)
+  }
+  if (base::any(!base::is.na(values[ , 2]))) {
+    check_df_p <- base::all(values[base::which(!base::is.na(values[ , 2])), 2] >= nullvalue)
+  }
+  if (!check_df_n | !check_df_p) {
+    stop("Values in column 1 must be <= nullvalue and values in column 2 must be >= nullvalue")
+  }
+  base::rm(check_df_n)
+  base::rm(check_df_p)
+  
+  # switch alignment
+  if (alignment == "horizontal") {
+    
+    if (length(dim(values))==1)
+    {
+      offset <- nullvalue - min(scale_real)
+      if (any(na.as.false(values<nullvalue))) offset <- offset - abs(sum(values[na.as.false(values<nullvalue)]))
+    } else {
+      offset <- rep(nullvalue - min(scale_real),nrow(values))
+      for (rr in 1:nrow(values))
+      {
+        rowvalues <- as.numeric(values[rr,,drop=TRUE])
+        if (any(na.as.false(rowvalues<nullvalue))) offset[rr] <- offset[rr] - abs(sum(rowvalues[na.as.false(rowvalues<nullvalue)]))
+      }
+    }
+    
+  }
+  
+  if (alignment == "vertical") {
+    
+    if (length(dim(values))==1)
+    {
+      offset <- nullvalue - min(scale_real)
+      if (any(na.as.false(values<nullvalue))) offset <- offset + abs(sum(values[na.as.false(values<nullvalue)]))
+    } else {
+      offset <- rep(nullvalue - min(scale_real),nrow(values))
+      for (rr in 1:nrow(values))
+      {
+        rowvalues <- as.numeric(values[rr,,drop=TRUE])
+        if (any(na.as.false(rowvalues<nullvalue))) offset[rr] <- offset[rr] + abs(sum(rowvalues[na.as.false(rowvalues<nullvalue)]))
+      }
+    }
+    
+  }
+  
+  # apply stackedBar
   return(stackedBar(svg = svg,
                     frame_name = frame_name,
                     group_name = group_name,
@@ -932,14 +1143,14 @@ percentileBar <- function(svg, frame_name, group_name, scale_real, values, align
 }
 
 ### LINIEN- UND SYMBOLDIAGRAMME ----
-
+# linesSymbols_in: get linesSymbols group
 linesSymbols_in <- function (svg_in, group_name) {
   
-  named_groups <- xml2::xml_find_all(svg_in, "/svg/g")
-  index_group <- which(xml2::xml_attr(named_groups, "id") == group_name)
-  if (length(index_group) != 1)
+  named_groups <- xml2::xml_find_all(svg_in, base::paste0("//g[@id='", group_name, "']"))
+  
+  if (base::length(named_groups) != 1)
   {
-    groups <- xml2::xml_find_all(svg_in, "/svg/g")
+    groups <- xml2::xml_find_all(svg_in, "//g")
     groups_av <- character()
     for (group in groups)
     {
@@ -950,7 +1161,10 @@ linesSymbols_in <- function (svg_in, group_name) {
     }
     stop(paste0("Error: Group not found or more than one groups with the same name. Available groups:", paste(groups_av, collapse=", ")))
   }
-  lineGroup <- named_groups[index_group]
+  
+  lineGroup <- named_groups
+  return(lineGroup)
+
 }
 
 linesSymbols_guess <- function(group)
@@ -1536,6 +1750,12 @@ linesSymbols_info_polygons <- function (polygons_inGroup) {
     min_x <- min_y <- Inf
     max_x <- max_y <- -Inf
     points <- get_polygon_coords(polygons_inGroup[pp])
+    
+    # remove duplicated rows for calculation of gravity. points will be pulled again later for calculation of new points
+    if (base::any(base::duplicated(points))) {
+      points <- points[-base::which(base::duplicated(points)), ]
+    }
+    
     dat_polygons[pp,]$num_points <- nrow(points)
     for (qq in 1:nrow(points))
     {
@@ -1998,6 +2218,25 @@ linesSymbols_edit_rects <- function (svg, group, frame_info, value_set, alignmen
   
   # available rects in group
   symbols_inGroup <- xml2::xml_find_all(group, "./rect")
+  
+  # check if x and y attributes are available
+  if (base::any(xml2::xml_has_attr(x = symbols_inGroup, attr = "x") == FALSE)) {
+    xml2::xml_set_attr(x = symbols_inGroup[base::which(xml2::xml_has_attr(x = symbols_inGroup, attr = "x") == FALSE)], attr = "x", value = "0")
+    base::warning("No x-attribute in at least one rect-node of the linesSymbols-group. Assuming that x is 0 and x is set to 0 in corresponding rect-node(s)")
+  }
+  if (base::any(xml2::xml_has_attr(x = symbols_inGroup, attr = "y") == FALSE)) {
+    xml2::xml_set_attr(x = symbols_inGroup[base::which(xml2::xml_has_attr(x = symbols_inGroup, attr = "y") == FALSE)], attr = "y", value = "0")
+    base::warning("No y-attribute in at least one rect-node of the linesSymbols-group. Assuming that y is 0 and y is set to 0 in corresponding rect-node(s)")
+  }
+  
+  # Check for translate and/or rotate values in transform attribute (if available)
+  if (base::any(xml2::xml_has_attr(x = symbols_inGroup, attr = "transform"))) {
+    attr_transform <- xml2::xml_attr(x = symbols_inGroup, attr = "transform")
+    if (base::any(base::grepl(pattern = "translate|rotate", x = attr_transform) == TRUE)) {
+      stop ("Currently svgtools doesn't support rectangle-nodes with translate and/or rotate values in transform attribute. Please use symbol type 'polygon' instead.")
+    }
+  }
+  
   if (length(symbols_inGroup)!=length(value_set))
   {
     if (length(symbols_inGroup)>=1 && scatter)
